@@ -13,6 +13,29 @@ export const translations = {
         subtitle: "Premium collection of traditional and modern abayas",
         cta: "Shop Now",
       },
+      banners: {
+        title: "Special Highlights",
+        items: [
+          {
+            title: "New Arrivals",
+            subtitle: "Latest abaya styles for every occasion",
+            cta: "Explore Now",
+            href: "/products",
+          },
+          {
+            title: "Premium Fabrics",
+            subtitle: "Luxury materials and refined stitching",
+            cta: "View Collection",
+            href: "/products",
+          },
+          {
+            title: "Fast Checkout",
+            subtitle: "Secure Stripe payment in minutes",
+            cta: "Go to Cart",
+            href: "/cart",
+          },
+        ],
+      },
       featured: "Featured Products",
     },
     products: {
@@ -109,6 +132,29 @@ export const translations = {
         title: "اكتشفي العبايات الأنيقة",
         subtitle: "مجموعة فاخرة من العبايات التقليدية والعصرية",
         cta: "تسوقي الآن",
+      },
+      banners: {
+        title: "أبرز العروض",
+        items: [
+          {
+            title: "وصل حديثاً",
+            subtitle: "أحدث موديلات العبايات لكل المناسبات",
+            cta: "استكشفي الآن",
+            href: "/products",
+          },
+          {
+            title: "أقمشة فاخرة",
+            subtitle: "خامات راقية ولمسات خياطة متقنة",
+            cta: "عرض التشكيلة",
+            href: "/products",
+          },
+          {
+            title: "دفع سريع",
+            subtitle: "دفع آمن عبر Stripe خلال دقائق",
+            cta: "اذهبي للسلة",
+            href: "/cart",
+          },
+        ],
       },
       featured: "المنتجات المميزة",
     },
