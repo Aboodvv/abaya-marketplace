@@ -1,17 +1,33 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const { t } = useLanguage();
+  const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder login logic
-    alert("Login functionality is a placeholder. In production, connect to your auth backend.");
+    setError("");
+    setLoading(true);
+
+    try {
+      await login(email, password);
+      router.push("/");
+    } catch (err: any) {
+      setError(err.message || "فشل تسجيل الدخول");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,7 +38,13 @@ export default function LoginPage() {
         </h1>
         <p className="text-gray-600 mb-8 text-center">{t.login.subtitle}</p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6 mb-6">
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               {t.login.email}
@@ -53,11 +75,28 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition"
+            disabled={loading}
+            className={`w-full py-3 rounded-lg font-semibold transition ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
           >
-            {t.login.submit}
+            {loading ? t.common.loading : t.login.submit}
           </button>
         </form>
+
+        <div className="text-center">
+          <p className="text-gray-600 mb-3">
+            {t.lang === "ar" ? "ليس لديك حساب؟ " : "Don't have an account? "}
+            <Link
+              href="/register"
+              className="text-gray-900 font-semibold hover:underline"
+            >
+              {t.lang === "ar" ? "سجل الآن" : "Register here"}
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

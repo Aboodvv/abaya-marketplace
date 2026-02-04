@@ -10,6 +10,8 @@ export interface Product {
   image: string;
   description: string;
   descriptionAr: string;
+  category: string;
+  categoryAr: string;
   inStock: boolean;
 }
 

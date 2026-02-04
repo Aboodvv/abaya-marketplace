@@ -1,12 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { products } from "@/data/products";
+import { products as localProducts } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Product } from "@/context/CartContext";
 
 export default function Home() {
   const { t } = useLanguage();
+  const [products, setProducts] = useState<Product[]>(localProducts);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const snapshot = await getDocs(collection(db, "products"));
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Product, "id">),
+      }));
+      if (list.length > 0) {
+        setProducts(list);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const featuredProducts = products.slice(0, 3);
 

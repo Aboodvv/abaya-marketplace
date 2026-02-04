@@ -2,6 +2,9 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
+import { useOrders } from "@/context/OrdersContext";
+import { useAuth } from "@/context/AuthContext";
+import { useNotifications } from "@/context/NotificationsContext";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2, Plus, Minus } from "lucide-react";
@@ -10,6 +13,9 @@ import { useState } from "react";
 export default function CartPage() {
   const { lang, t } = useLanguage();
   const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { createOrder } = useOrders();
+  const { createNotification } = useNotifications();
+  const { user, userProfile } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleCheckout = async () => {
@@ -22,6 +28,40 @@ export default function CartPage() {
       });
 
       const { url } = await response.json();
+      if (user && cart.length > 0) {
+        const orderId = await createOrder({
+          userId: user.uid,
+          items: cart,
+          total: totalPrice,
+        });
+
+        await createNotification({
+          userId: user.uid,
+          title: lang === "ar" ? "تم إنشاء طلبك" : "Order Created",
+          body:
+            lang === "ar"
+              ? `تم إنشاء طلب جديد بقيمة $${totalPrice.toFixed(2)}`
+              : `A new order has been created for $${totalPrice.toFixed(2)}`,
+        });
+
+        if (user.email) {
+          await fetch("/api/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: user.email,
+              subject:
+                lang === "ar"
+                  ? "تأكيد استلام الطلب"
+                  : "Order confirmation",
+              html:
+                lang === "ar"
+                  ? `<p>مرحبًا ${userProfile?.name || ""}</p><p>تم إنشاء طلبك بنجاح.</p><p>رقم الطلب: ${orderId}</p><p>المجموع: $${totalPrice.toFixed(2)}</p>`
+                  : `<p>Hello ${userProfile?.name || ""}</p><p>Your order has been created successfully.</p><p>Order ID: ${orderId}</p><p>Total: $${totalPrice.toFixed(2)}</p>`,
+            }),
+          });
+        }
+      }
       if (url) {
         window.location.href = url;
       }

@@ -9,6 +9,8 @@ export const products: Product[] = [
     image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&h=700&fit=crop",
     description: "Elegant traditional black abaya with subtle embroidery",
     descriptionAr: "عباية سوداء تقليدية أنيقة مع تطريز دقيق",
+    category: "classic",
+    categoryAr: "كلاسيكي",
     inStock: true,
   },
   {
@@ -19,6 +21,8 @@ export const products: Product[] = [
     image: "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=500&h=700&fit=crop",
     description: "Premium silk abaya with delicate gold trim",
     descriptionAr: "عباية حريرية فاخرة مع زخارف ذهبية رقيقة",
+    category: "luxury",
+    categoryAr: "فاخر",
     inStock: true,
   },
   {
@@ -29,6 +33,8 @@ export const products: Product[] = [
     image: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=500&h=700&fit=crop",
     description: "Contemporary design with flowing silhouette",
     descriptionAr: "تصميم عصري مع قصة انسيابية",
+    category: "modern",
+    categoryAr: "عصري",
     inStock: true,
   },
   {
@@ -39,6 +45,8 @@ export const products: Product[] = [
     image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&h=700&fit=crop",
     description: "Stunning evening abaya with crystal details",
     descriptionAr: "عباية مسائية رائعة مع تفاصيل كريستالية",
+    category: "evening",
+    categoryAr: "مسائي",
     inStock: false,
   },
   {
@@ -49,6 +57,8 @@ export const products: Product[] = [
     image: "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=500&h=700&fit=crop",
     description: "Comfortable everyday abaya with modern style",
     descriptionAr: "عباية يومية مريحة بأسلوب عصري",
+    category: "casual",
+    categoryAr: "يومي",
     inStock: true,
   },
   {
@@ -59,6 +69,8 @@ export const products: Product[] = [
     image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&h=700&fit=crop",
     description: "Elegant abaya with intricate lace patterns",
     descriptionAr: "عباية أنيقة مع نقوش دانتيل معقدة",
+    category: "classic",
+    categoryAr: "كلاسيكي",
     inStock: true,
   },
 ];
