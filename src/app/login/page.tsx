@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -88,12 +88,12 @@ export default function LoginPage() {
 
         <div className="text-center">
           <p className="text-gray-600 mb-3">
-            {t.lang === "ar" ? "ليس لديك حساب؟ " : "Don't have an account? "}
+            {lang === "ar" ? "ليس لديك حساب؟ " : "Don't have an account? "}
             <Link
               href="/register"
               className="text-gray-900 font-semibold hover:underline"
             >
-              {t.lang === "ar" ? "سجل الآن" : "Register here"}
+              {lang === "ar" ? "سجل الآن" : "Register here"}
             </Link>
           </p>
         </div>
