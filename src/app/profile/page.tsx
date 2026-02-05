@@ -21,14 +21,14 @@ export default function ProfilePage() {
 
   if (!userProfile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="text-center bg-white rounded-3xl shadow-xl p-10 border border-[#efe7da]">
           <h2 className="text-2xl font-bold mb-4">
             {lang === "ar" ? "يجب تسجيل الدخول" : "Please log in"}
           </h2>
           <Link
             href="/login"
-            className="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
+            className="inline-flex px-6 py-3 bg-[#c7a86a] text-black rounded-full hover:bg-[#b59659]"
           >
             {lang === "ar" ? "تسجيل الدخول" : "Login"}
           </Link>
@@ -56,9 +56,12 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-[#f7f4ef] py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+          <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+            {lang === "ar" ? "الملف الشخصي" : "Profile"}
+          </p>
           <h1 className="text-4xl font-bold text-gray-900 mb-8">
             {lang === "ar" ? "حسابي" : "My Profile"}
           </h1>
@@ -102,7 +105,7 @@ export default function ProfilePage() {
 
               <button
                 onClick={() => setEditing(true)}
-                className="mt-8 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
+                className="mt-8 px-6 py-3 bg-[#c7a86a] text-black rounded-full hover:bg-[#b59659] transition"
               >
                 {lang === "ar" ? "تعديل البيانات" : "Edit Profile"}
               </button>
@@ -118,7 +121,7 @@ export default function ProfilePage() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                  className="w-full px-4 py-3 border border-[#efe7da] rounded-full focus:ring-2 focus:ring-[#c7a86a]/40 focus:outline-none"
                 />
               </div>
 
@@ -131,7 +134,7 @@ export default function ProfilePage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                  className="w-full px-4 py-3 border border-[#efe7da] rounded-full focus:ring-2 focus:ring-[#c7a86a]/40 focus:outline-none"
                 />
               </div>
 
@@ -144,7 +147,7 @@ export default function ProfilePage() {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                  className="w-full px-4 py-3 border border-[#efe7da] rounded-full focus:ring-2 focus:ring-[#c7a86a]/40 focus:outline-none"
                 />
               </div>
 
@@ -157,7 +160,7 @@ export default function ProfilePage() {
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                  className="w-full px-4 py-3 border border-[#efe7da] rounded-full focus:ring-2 focus:ring-[#c7a86a]/40 focus:outline-none"
                 />
               </div>
 
@@ -165,10 +168,10 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`flex-1 px-6 py-3 rounded-lg font-semibold transition ${
+                  className={`flex-1 px-6 py-3 rounded-full font-semibold transition ${
                     loading
-                      ? "bg-gray-400"
-                      : "bg-gray-900 text-white hover:bg-gray-800"
+                      ? "bg-gray-300"
+                      : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
                   }`}
                 >
                   {loading ? (lang === "ar" ? "جاري الحفظ..." : "Saving...") : (lang === "ar" ? "حفظ" : "Save")}
@@ -176,7 +179,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setEditing(false)}
-                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition font-semibold"
+                  className="flex-1 px-6 py-3 bg-[#f7f4ef] text-gray-900 rounded-full hover:bg-[#efe7da] transition font-semibold"
                 >
                   {lang === "ar" ? "إلغاء" : "Cancel"}
                 </button>

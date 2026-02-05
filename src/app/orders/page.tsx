@@ -30,14 +30,14 @@ export default function OrdersPage() {
 
   if (!user || !userProfile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="text-center bg-white rounded-3xl shadow-xl p-10 border border-[#efe7da]">
           <h2 className="text-2xl font-bold mb-4">
             {lang === "ar" ? "يجب تسجيل الدخول" : "Please log in"}
           </h2>
           <Link
             href="/login"
-            className="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
+            className="inline-flex px-6 py-3 bg-[#c7a86a] text-black rounded-full hover:bg-[#b59659]"
           >
             {lang === "ar" ? "تسجيل الدخول" : "Login"}
           </Link>
@@ -47,20 +47,25 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-[#f7f4ef] py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-10">
-          {t.orders.title}
-        </h1>
+        <div className="mb-10">
+          <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+            {lang === "ar" ? "طلباتي" : "My Orders"}
+          </p>
+          <h1 className="text-4xl font-bold text-gray-900">
+            {t.orders.title}
+          </h1>
+        </div>
 
         {loading ? (
           <div className="text-gray-600">{t.common.loading}</div>
         ) : orders.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-6 text-center">
+          <div className="bg-white rounded-3xl shadow-xl p-6 text-center border border-[#efe7da]">
             <p className="text-gray-600 mb-4">{t.orders.empty}</p>
             <Link
               href="/products"
-              className="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
+              className="inline-flex px-6 py-3 bg-[#c7a86a] text-black rounded-full hover:bg-[#b59659]"
             >
               {t.cart.continueShopping}
             </Link>
@@ -68,7 +73,7 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-6">
             {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-lg shadow p-6">
+              <div key={order.id} className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                   <div>
                     <p className="text-sm text-gray-500">{t.orders.orderId}</p>
@@ -82,7 +87,7 @@ export default function OrdersPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">{t.orders.status}</p>
-                    <span className="inline-block px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold">
+                    <span className="inline-block px-3 py-1 rounded-full bg-[#efe7da] text-[#7a5a1f] text-sm font-semibold">
                       {t.orders.pending}
                     </span>
                   </div>

@@ -31,8 +31,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+    <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full border border-[#efe7da]">
+        <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] text-center mb-2">
+          {lang === "ar" ? "مرحبا بك" : "Welcome"}
+        </p>
         <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
           {t.login.title}
         </h1>
@@ -54,7 +57,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+              className="w-full px-4 py-3 border border-[#efe7da] rounded-full bg-white focus:ring-2 focus:ring-[#c7a86a]/40 focus:outline-none"
               placeholder="example@email.com"
             />
           </div>
@@ -68,7 +71,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+              className="w-full px-4 py-3 border border-[#efe7da] rounded-full bg-white focus:ring-2 focus:ring-[#c7a86a]/40 focus:outline-none"
               placeholder="••••••••"
             />
           </div>
@@ -76,10 +79,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold transition ${
+            className={`w-full py-3 rounded-full font-semibold transition ${
               loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-900 text-white hover:bg-gray-800"
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
             }`}
           >
             {loading ? t.common.loading : t.login.submit}
@@ -91,7 +94,7 @@ export default function LoginPage() {
             {lang === "ar" ? "ليس لديك حساب؟ " : "Don't have an account? "}
             <Link
               href="/register"
-              className="text-gray-900 font-semibold hover:underline"
+              className="text-[#c7a86a] font-semibold hover:underline"
             >
               {lang === "ar" ? "سجل الآن" : "Register here"}
             </Link>
