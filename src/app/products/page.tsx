@@ -63,22 +63,40 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-10 text-center">
-          {t.products.title}
-        </h1>
+    <div className="min-h-screen bg-[#f7f4ef]">
+      <div className="relative overflow-hidden bg-[#0b0b0b]">
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+            {t.products.title}
+          </h1>
+          <p className="text-white/70 text-lg">
+            {lang === "ar"
+              ? "اختاري من مجموعتنا المميزة من العبايات"
+              : "Shop the refined abaya collection"}
+          </p>
+        </div>
+      </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-10">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-            {t.filters.title}
-          </h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-10 border border-[#efe7da]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {t.filters.title}
+            </h2>
+            <button
+              onClick={handleClear}
+              className="px-4 py-2 rounded-full bg-[#f7f4ef] text-gray-900 hover:bg-[#efe7da]"
+            >
+              {t.filters.clear}
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t.filters.search}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-2 bg-white"
             />
             <input
               type="number"
@@ -86,7 +104,7 @@ export default function ProductsPage() {
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               placeholder={t.filters.minPrice}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-2 bg-white"
             />
             <input
               type="number"
@@ -94,12 +112,12 @@ export default function ProductsPage() {
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               placeholder={t.filters.maxPrice}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-2 bg-white"
             />
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-2 bg-white"
             >
               <option value="all">{t.filters.all}</option>
               {categories.map((cat) => (
@@ -119,12 +137,6 @@ export default function ProductsPage() {
               />
               {t.filters.inStockOnly}
             </label>
-            <button
-              onClick={handleClear}
-              className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-            >
-              {t.filters.clear}
-            </button>
           </div>
         </div>
 

@@ -59,26 +59,30 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+    <div className="group bg-white rounded-2xl shadow-md overflow-hidden border border-[#efe7da] hover:shadow-xl transition">
       <div className="relative h-80 w-full">
         <Image
           src={product.image}
           alt={name}
           fill
-          className="object-cover"
+          className="object-cover transition duration-500 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent" />
         {!product.inStock && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+          <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
             {t.products.outOfStock}
           </div>
         )}
+        <div className="absolute bottom-3 left-3 bg-white/90 text-black px-3 py-1 rounded-full text-xs font-semibold">
+          ${product.price}
+        </div>
       </div>
-      <div className="p-4">
-        <h3 className="text-xl font-bold mb-2 text-gray-800">{name}</h3>
+      <div className="p-5">
+        <h3 className="text-lg font-bold mb-2 text-gray-900 line-clamp-1">{name}</h3>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-yellow-500">★</span>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-[#c7a86a]">★</span>
           <span className="text-sm text-gray-700">
             {averageRating.toFixed(1)} ({reviews.length})
           </span>
@@ -90,13 +94,15 @@ export default function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold text-gray-900">${product.price}</span>
+          <span className="text-sm uppercase tracking-[0.2em] text-[#c7a86a]">
+            {product.inStock ? t.products.inStock : t.products.outOfStock}
+          </span>
           <button
             onClick={() => addToCart(product)}
             disabled={!product.inStock}
-            className={`px-6 py-2 rounded-lg font-semibold transition ${
+            className={`px-5 py-2 rounded-full font-semibold transition ${
               product.inStock
-                ? "bg-gray-900 text-white hover:bg-gray-800"
+                ? "bg-[#c7a86a] text-black hover:bg-[#b59659]"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
@@ -105,7 +111,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {showReviews && (
-          <div className="mt-4 border-t pt-4">
+          <div className="mt-4 border-t border-[#efe7da] pt-4">
             <h4 className="text-lg font-semibold mb-3">{t.reviews.title}</h4>
 
             {user ? (
@@ -115,7 +121,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <select
                     value={rating}
                     onChange={(e) => setRating(Number(e.target.value))}
-                    className="border rounded px-2 py-1 text-sm"
+                    className="border border-[#efe7da] rounded px-2 py-1 text-sm"
                   >
                     {[5, 4, 3, 2, 1].map((value) => (
                       <option key={value} value={value}>
@@ -128,15 +134,15 @@ export default function ProductCard({ product }: ProductCardProps) {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder={t.reviews.comment}
-                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  className="w-full border border-[#efe7da] rounded-lg px-3 py-2 text-sm"
                   rows={2}
                   required
                 />
                 <button
                   type="submit"
                   disabled={submitting}
-                  className={`px-4 py-2 rounded-lg text-white text-sm ${
-                    submitting ? "bg-gray-400" : "bg-gray-900 hover:bg-gray-800"
+                  className={`px-4 py-2 rounded-full text-black text-sm ${
+                    submitting ? "bg-gray-300" : "bg-[#c7a86a] hover:bg-[#b59659]"
                   }`}
                 >
                   {submitting ? t.common.loading : t.reviews.submit}
