@@ -131,13 +131,18 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
+    <div className="min-h-screen bg-[#f7f4ef] py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          {t.admin.title}
-        </h1>
+        <div className="mb-8">
+          <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+            {lang === "ar" ? "الإدارة" : "Admin"}
+          </p>
+          <h1 className="text-4xl font-bold text-gray-900">
+            {t.admin.title}
+          </h1>
+        </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-10">
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-10 border border-[#efe7da]">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             {t.admin.addProduct}
           </h2>
@@ -147,7 +152,7 @@ export default function AdminPage() {
               value={form.name}
               onChange={handleChange}
               placeholder={t.admin.nameEn}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-3"
               required
             />
             <input
@@ -155,7 +160,7 @@ export default function AdminPage() {
               value={form.nameAr}
               onChange={handleChange}
               placeholder={t.admin.nameAr}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-3"
               required
             />
             <input
@@ -166,7 +171,7 @@ export default function AdminPage() {
               value={form.price}
               onChange={handleChange}
               placeholder={t.admin.price}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-3"
               required
             />
             <input
@@ -174,7 +179,7 @@ export default function AdminPage() {
               value={form.image}
               onChange={handleChange}
               placeholder={t.admin.image}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-3"
               required
             />
             <textarea
@@ -182,7 +187,7 @@ export default function AdminPage() {
               value={form.description}
               onChange={handleChange}
               placeholder={t.admin.descriptionEn}
-              className="border rounded-lg px-4 py-2 md:col-span-2"
+              className="border border-[#efe7da] rounded-3xl px-4 py-3 md:col-span-2"
               rows={2}
             />
             <textarea
@@ -190,7 +195,7 @@ export default function AdminPage() {
               value={form.descriptionAr}
               onChange={handleChange}
               placeholder={t.admin.descriptionAr}
-              className="border rounded-lg px-4 py-2 md:col-span-2"
+              className="border border-[#efe7da] rounded-3xl px-4 py-3 md:col-span-2"
               rows={2}
             />
             <input
@@ -198,7 +203,7 @@ export default function AdminPage() {
               value={form.category}
               onChange={handleChange}
               placeholder={t.admin.categoryEn}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-3"
               required
             />
             <input
@@ -206,7 +211,7 @@ export default function AdminPage() {
               value={form.categoryAr}
               onChange={handleChange}
               placeholder={t.admin.categoryAr}
-              className="border rounded-lg px-4 py-2"
+              className="border border-[#efe7da] rounded-full px-4 py-3"
               required
             />
             <label className="flex items-center gap-2 text-gray-700">
@@ -221,8 +226,10 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={saving}
-              className={`md:col-span-2 px-6 py-3 rounded-lg font-semibold ${
-                saving ? "bg-gray-400" : "bg-gray-900 text-white hover:bg-gray-800"
+              className={`md:col-span-2 px-6 py-3 rounded-full font-semibold ${
+                saving
+                  ? "bg-gray-300"
+                  : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
               }`}
             >
               {saving ? t.common.loading : t.admin.save}
@@ -230,7 +237,7 @@ export default function AdminPage() {
           </form>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             {t.admin.products}
           </h2>
@@ -241,20 +248,20 @@ export default function AdminPage() {
           ) : (
             <div className="space-y-6">
               {products.map((product) => (
-                <div key={product.id} className="border rounded-lg p-4">
+                <div key={product.id} className="border border-[#efe7da] rounded-3xl p-4">
                   {editingId === product.id ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <input
                         name="name"
                         value={editForm.name}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2"
+                        className="border border-[#efe7da] rounded-full px-4 py-3"
                       />
                       <input
                         name="nameAr"
                         value={editForm.nameAr}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2"
+                        className="border border-[#efe7da] rounded-full px-4 py-3"
                       />
                       <input
                         name="price"
@@ -263,39 +270,39 @@ export default function AdminPage() {
                         step="0.01"
                         value={editForm.price}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2"
+                        className="border border-[#efe7da] rounded-full px-4 py-3"
                       />
                       <input
                         name="image"
                         value={editForm.image}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2"
+                        className="border border-[#efe7da] rounded-full px-4 py-3"
                       />
                       <textarea
                         name="description"
                         value={editForm.description}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2 md:col-span-2"
+                        className="border border-[#efe7da] rounded-3xl px-4 py-3 md:col-span-2"
                         rows={2}
                       />
                       <textarea
                         name="descriptionAr"
                         value={editForm.descriptionAr}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2 md:col-span-2"
+                        className="border border-[#efe7da] rounded-3xl px-4 py-3 md:col-span-2"
                         rows={2}
                       />
                       <input
                         name="category"
                         value={editForm.category}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2"
+                        className="border border-[#efe7da] rounded-full px-4 py-3"
                       />
                       <input
                         name="categoryAr"
                         value={editForm.categoryAr}
                         onChange={handleEditChange}
-                        className="border rounded-lg px-4 py-2"
+                        className="border border-[#efe7da] rounded-full px-4 py-3"
                       />
                       <label className="flex items-center gap-2 text-gray-700">
                         <input
@@ -310,17 +317,17 @@ export default function AdminPage() {
                         <button
                           onClick={() => handleUpdate(product.id)}
                           disabled={saving}
-                          className={`px-4 py-2 rounded-lg ${
+                          className={`px-4 py-2 rounded-full ${
                             saving
-                              ? "bg-gray-400"
-                              : "bg-gray-900 text-white hover:bg-gray-800"
+                              ? "bg-gray-300"
+                              : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
                           }`}
                         >
                           {t.admin.update}
                         </button>
                         <button
                           onClick={() => setEditingId(null)}
-                          className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+                          className="px-4 py-2 rounded-full bg-[#f7f4ef] hover:bg-[#efe7da]"
                         >
                           {t.admin.cancel}
                         </button>
@@ -337,13 +344,13 @@ export default function AdminPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(product)}
-                          className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600"
+                          className="px-4 py-2 rounded-full bg-[#111] text-white hover:bg-black"
                         >
                           {t.admin.edit}
                         </button>
                         <button
                           onClick={() => handleDelete(product.id)}
-                          className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                          className="px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
                         >
                           {t.admin.delete}
                         </button>
