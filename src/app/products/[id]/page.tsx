@@ -387,6 +387,81 @@ export default function ProductDetailsPage() {
           <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
             <div className="mb-6">
               <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "اختيار المقاس" : "Size tips"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "توصيات المقاسات حسب الطول" : "Height-based sizing"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="flex items-center justify-between border-b border-[#efe7da] pb-3">
+                <span>{lang === "ar" ? "155-160 سم" : "155-160 cm"}</span>
+                <span className="font-semibold">{lang === "ar" ? "طول 54" : "Length 54"}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-[#efe7da] pb-3">
+                <span>{lang === "ar" ? "160-168 سم" : "160-168 cm"}</span>
+                <span className="font-semibold">{lang === "ar" ? "طول 56" : "Length 56"}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-[#efe7da] pb-3">
+                <span>{lang === "ar" ? "168-175 سم" : "168-175 cm"}</span>
+                <span className="font-semibold">{lang === "ar" ? "طول 58" : "Length 58"}</span>
+              </div>
+              <p className="text-sm text-gray-600">
+                {lang === "ar"
+                  ? "يمكن تعديل الطول حسب الطلب."
+                  : "Length can be adjusted on request."}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "قصص العملاء" : "Customer stories"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "تجارب من عملائنا" : "Loved by customers"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "سارة" : "Sara"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "الخامة رائعة والتفصيل أنيق جداً. وصلتني بسرعة!"
+                    : "Beautiful fabric and elegant tailoring. Arrived fast!"}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "ريم" : "Reem"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "لون فخم ومقاس مناسب تماماً."
+                    : "Luxurious color and perfect fit."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "نورة" : "Noura"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "أول مرة أشتري منكم وبالتأكيد ليست الأخيرة."
+                    : "My first order, definitely not the last."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
                 {lang === "ar" ? "خدمات ما بعد البيع" : "After-sale"}
               </p>
               <h2 className="text-2xl font-bold text-gray-900">
