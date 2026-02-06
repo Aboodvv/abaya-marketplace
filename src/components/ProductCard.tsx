@@ -6,6 +6,7 @@ import { useCart, Product } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useReviews, Review } from "@/context/ReviewsContext";
 import Image from "next/image";
+import Link from "next/link";
 
 interface ProductCardProps {
   product: Product;
@@ -60,7 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="group bg-white rounded-2xl shadow-md overflow-hidden border border-[#efe7da] hover:shadow-xl transition">
-      <div className="relative h-80 w-full">
+      <Link href={`/products/${product.id}`} className="relative h-80 w-full block">
         <Image
           src={product.image}
           alt={name}
@@ -77,9 +78,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="absolute bottom-3 left-3 bg-white/90 text-black px-3 py-1 rounded-full text-xs font-semibold">
           ${product.price}
         </div>
-      </div>
+      </Link>
       <div className="p-5">
-        <h3 className="text-lg font-bold mb-2 text-gray-900 line-clamp-1">{name}</h3>
+        <Link href={`/products/${product.id}`} className="block">
+          <h3 className="text-lg font-bold mb-2 text-gray-900 line-clamp-1 hover:text-[#c7a86a] transition">
+            {name}
+          </h3>
+        </Link>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-[#c7a86a]">★</span>
