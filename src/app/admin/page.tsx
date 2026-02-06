@@ -62,6 +62,7 @@ export default function AdminPage() {
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
   const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
   const [sellerLookup, setSellerLookup] = useState<Record<string, SellerInfo>>({});
+  const [withdrawalFilter, setWithdrawalFilter] = useState("all");
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -344,15 +345,36 @@ export default function AdminPage() {
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             {lang === "ar" ? "طلبات سحب الأرباح" : "Withdrawal Requests"}
           </h2>
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="text-sm text-gray-600">
+              {lang === "ar" ? "فلترة" : "Filter"}
+            </span>
+            <select
+              value={withdrawalFilter}
+              onChange={(event) => setWithdrawalFilter(event.target.value)}
+              className="border border-[#efe7da] rounded-full px-4 py-2"
+            >
+              <option value="all">{lang === "ar" ? "الكل" : "All"}</option>
+              <option value="pending">{lang === "ar" ? "قيد المراجعة" : "Pending"}</option>
+              <option value="approved">{lang === "ar" ? "مقبول" : "Approved"}</option>
+              <option value="rejected">{lang === "ar" ? "مرفوض" : "Rejected"}</option>
+            </select>
+          </div>
           {loadingWithdrawals ? (
             <p className="text-gray-600">{t.common.loading}</p>
-          ) : withdrawals.length === 0 ? (
+          ) : withdrawals.filter((request) =>
+              withdrawalFilter === "all" ? true : request.status === withdrawalFilter
+            ).length === 0 ? (
             <p className="text-gray-600">
               {lang === "ar" ? "لا توجد طلبات سحب" : "No withdrawal requests"}
             </p>
           ) : (
             <div className="space-y-4">
-              {withdrawals.map((request) => (
+              {withdrawals
+                .filter((request) =>
+                  withdrawalFilter === "all" ? true : request.status === withdrawalFilter
+                )
+                .map((request) => (
                 <div
                   key={request.id}
                   className="border border-[#efe7da] rounded-3xl p-4 flex flex-wrap items-center justify-between gap-4"
