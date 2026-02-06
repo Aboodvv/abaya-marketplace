@@ -5,6 +5,8 @@ import Link from "next/link";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import { isAdminUser } from "@/lib/admin";
 
 const defaultAdImages = [
   "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop",
@@ -53,6 +55,8 @@ const defaultAdItems = [
 
 export default function AdminBannersPage() {
   const { lang } = useLanguage();
+  const { user, userProfile, loading: authLoading } = useAuth();
+  const isAdmin = isAdminUser(userProfile);
   const [adImages, setAdImages] = useState<string[]>(defaultAdImages);
   const [adItems, setAdItems] = useState(defaultAdItems);
   const [bookingLink, setBookingLink] = useState("https://iwtsp.com/966550514533");
@@ -60,6 +64,7 @@ export default function AdminBannersPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!isAdmin) return;
     const load = async () => {
       try {
         const snapshot = await getDoc(doc(db, "settings", "homeAds"));
@@ -94,7 +99,53 @@ export default function AdminBannersPage() {
     };
 
     load();
-  }, []);
+  }, [isAdmin]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
+        <p className="text-gray-600">{lang === "ar" ? "جاري التحميل..." : "Loading..."}</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            {lang === "ar" ? "تسجيل الدخول مطلوب" : "Login required"}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {lang === "ar" ? "يجب تسجيل الدخول للوصول للإدارة." : "Please log in to access admin."}
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold"
+          >
+            {lang === "ar" ? "تسجيل الدخول" : "Login"}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            {lang === "ar" ? "غير مصرح" : "Access denied"}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {lang === "ar"
+              ? "ليس لديك صلاحية للوصول إلى لوحة الإدارة."
+              : "You do not have permission to access the admin panel."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (index: number, value: string) => {
     setAdImages((prev) => prev.map((item, idx) => (idx === index ? value : item)));

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { isAdminUser } from "@/lib/admin";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -13,6 +14,13 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const { user, userProfile, logout, loading } = useAuth();
   const { unreadCount, loadNotifications } = useNotifications();
+  const isAdmin = isAdminUser(userProfile);
+  const topBarItems = [
+    { key: "explore", href: "/explore", label: t.topbar.explore },
+    { key: "abayas", href: "/abayas", label: t.topbar.abayas },
+    { key: "fabrics", href: "/fabrics", label: t.topbar.fabrics },
+    { key: "delivery", href: "/delivery", label: t.topbar.fastDelivery },
+  ];
 
   const toggleLang = () => {
     setLang(lang === "en" ? "ar" : "en");
@@ -30,6 +38,26 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0b0b0b]/90 text-white backdrop-blur">
+      <div className="border-b border-white/10 bg-black/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className={`flex flex-wrap items-center justify-center gap-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 ${
+              dir === "rtl" ? "flex-row-reverse" : ""
+            }`}
+          >
+            {topBarItems.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                className="flex items-center gap-3 hover:text-[#c7a86a] transition"
+              >
+                <span className="h-1 w-1 rounded-full bg-[#c7a86a]" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div
@@ -51,9 +79,11 @@ export default function Navbar() {
               <Link href="/seller/login" className="hover:text-[#c7a86a] transition">
                 {t.nav.seller}
               </Link>
-              <Link href="/admin" className="hover:text-[#c7a86a] transition">
-                {t.nav.admin}
-              </Link>
+              {isAdmin && (
+                <Link href="/admin" className="hover:text-[#c7a86a] transition">
+                  {t.nav.admin}
+                </Link>
+              )}
               <Link
                 href="/cart"
                 className="hover:text-[#c7a86a] transition flex items-center gap-2"

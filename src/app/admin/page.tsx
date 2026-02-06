@@ -13,6 +13,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import { isAdminUser } from "@/lib/admin";
 
 interface AdminProduct {
   id: string;
@@ -69,6 +71,8 @@ const emptyProduct = {
 
 export default function AdminPage() {
   const { lang, t } = useLanguage();
+  const { user, userProfile, loading: authLoading } = useAuth();
+  const isAdmin = isAdminUser(userProfile);
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
@@ -104,11 +108,13 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    if (!isAdmin) return;
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
+    if (!isAdmin) return;
     const loadSellers = async () => {
       setLoadingSellers(true);
       const snapshot = await getDocs(collection(db, "sellers"));
@@ -121,9 +127,10 @@ export default function AdminPage() {
     };
 
     loadSellers();
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
+    if (!isAdmin) return;
     const loadWithdrawals = async () => {
       setLoadingWithdrawals(true);
       const snapshot = await getDocs(collection(db, "withdrawals"));
@@ -152,7 +159,7 @@ export default function AdminPage() {
     };
 
     loadWithdrawals();
-  }, []);
+  }, [isAdmin]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -269,6 +276,52 @@ export default function AdminPage() {
     setUpdatingSeller(null);
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
+        <p className="text-gray-600">{t.common.loading}</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            {lang === "ar" ? "تسجيل الدخول مطلوب" : "Login required"}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {lang === "ar" ? "يجب تسجيل الدخول للوصول للإدارة." : "Please log in to access admin."}
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold"
+          >
+            {t.nav.login}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            {lang === "ar" ? "غير مصرح" : "Access denied"}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {lang === "ar"
+              ? "ليس لديك صلاحية للوصول إلى لوحة الإدارة."
+              : "You do not have permission to access the admin panel."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f4ef] py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -298,6 +351,25 @@ export default function AdminPage() {
               className="inline-flex px-5 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
             >
               {lang === "ar" ? "فتح لوحة البنرات" : "Open banner panel"}
+            </Link>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                {t.adminPages.sectionTitle}
+              </h2>
+              <p className="text-gray-600 text-sm mt-2">
+                {t.adminPages.sectionSubtitle}
+              </p>
+            </div>
+            <Link
+              href="/admin/pages"
+              className="inline-flex px-5 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+            >
+              {t.adminPages.openPanel}
             </Link>
           </div>
         </div>
