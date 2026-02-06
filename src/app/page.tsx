@@ -185,7 +185,7 @@ export default function Home() {
             <p className="text-gray-600 text-sm mt-2">{t.home.ads.subtitle}</p>
           </div>
           <Link
-            href="/contact"
+            href="https://iwtsp.com/966550514533"
             className="inline-flex items-center px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
           >
             {t.home.ads.cta}
