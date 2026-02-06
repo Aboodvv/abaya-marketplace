@@ -266,43 +266,63 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mt-8 bg-white rounded-3xl border border-[#efe7da] p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-xl font-bold text-gray-900">{t.home.ads.items[3].title}</h4>
-            <span className="text-sm text-gray-500">{t.home.ads.items[3].size}</span>
-          </div>
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {[...Array(6)].map((_, index) => (
-              <div
-                key={`ad-strip-${index}`}
-                className="min-w-[220px] rounded-2xl border border-[#efe7da] bg-[#f7f4ef] p-4 relative overflow-hidden"
-                style={{
-                  backgroundImage: `url(${adImages[3]})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                <div className="absolute inset-0 bg-white/80" />
-                <div className="relative">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
-                    {lang === "ar" ? "إعلان" : "Ad"}
-                  </p>
-                  <p className="text-gray-700 text-sm mb-3">
-                    {lang === "ar"
-                      ? "احجز هذه المساحة لعرض حملتك."
-                      : "Reserve this slot for your campaign."}
-                  </p>
-                  <Link
-                    href="https://iwtsp.com/966550514533"
-                    className="text-sm font-semibold text-[#c7a86a] hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t.home.ads.cta}
-                  </Link>
-                </div>
+        <div
+          className="mt-8 rounded-3xl border border-[#efe7da] shadow-lg overflow-hidden"
+          style={{
+            backgroundImage: `url(${adImages[3]})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="bg-black/55 p-6 md:p-10">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h4 className="text-2xl md:text-3xl font-bold text-white">
+                  {t.home.ads.items[3].title}
+                </h4>
+                <p className="text-sm text-white/70">{t.home.ads.items[3].size}</p>
               </div>
-            ))}
+              <Link
+                href="https://iwtsp.com/966550514533"
+                className="px-5 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t.home.ads.cta}
+              </Link>
+            </div>
+
+            <div className="marquee">
+              <div className="marquee-track">
+                {[...Array(2)].map((_, trackIndex) => (
+                  <div key={`track-${trackIndex}`} className="flex items-center gap-6 pr-6">
+                    {[...Array(6)].map((__, index) => (
+                      <div
+                        key={`ad-chip-${trackIndex}-${index}`}
+                        className="min-w-[220px] rounded-2xl bg-white/90 p-4 text-gray-900"
+                      >
+                        <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                          {lang === "ar" ? "إعلان" : "Ad"}
+                        </p>
+                        <p className="text-sm mb-3">
+                          {lang === "ar"
+                            ? "بنر متحرك واسع لحملاتك الإعلانية."
+                            : "Wide moving banner for your campaigns."}
+                        </p>
+                        <Link
+                          href="https://iwtsp.com/966550514533"
+                          className="text-sm font-semibold text-[#c7a86a] hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t.home.ads.cta}
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
