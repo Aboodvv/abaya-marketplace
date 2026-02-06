@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   addDoc,
   collection,
@@ -140,6 +141,27 @@ export default function AdminPage() {
           <h1 className="text-4xl font-bold text-gray-900">
             {t.admin.title}
           </h1>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                {lang === "ar" ? "بنرات الصفحة الرئيسية" : "Home Banners"}
+              </h2>
+              <p className="text-gray-600 text-sm mt-2">
+                {lang === "ar"
+                  ? "تحكم بصور البنرات الإعلانية من لوحة مخصصة."
+                  : "Manage ad banner images from a dedicated panel."}
+              </p>
+            </div>
+            <Link
+              href="/admin/banners"
+              className="inline-flex px-5 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+            >
+              {lang === "ar" ? "فتح لوحة البنرات" : "Open banner panel"}
+            </Link>
+          </div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-10 border border-[#efe7da]">

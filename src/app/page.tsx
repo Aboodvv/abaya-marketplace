@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { products as localProducts } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product } from "@/context/CartContext";
 
@@ -14,12 +14,13 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>(localProducts);
   const megaDealHours = 24; // عدّل الرقم لتغيير مدة المؤقت
   const [timeLeftMs, setTimeLeftMs] = useState(megaDealHours * 60 * 60 * 1000);
-  const adImages = [
+  const defaultAdImages = [
     "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=900&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=900&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=900&auto=format&fit=crop",
   ];
+  const [adImages, setAdImages] = useState<string[]>(defaultAdImages);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -34,6 +35,26 @@ export default function Home() {
     };
 
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const fetchAdImages = async () => {
+      try {
+        const snapshot = await getDoc(doc(db, "settings", "homeAds"));
+        if (snapshot.exists()) {
+          const data = snapshot.data() as { adImages?: string[] };
+          if (data.adImages && data.adImages.length > 0) {
+            setAdImages(
+              defaultAdImages.map((fallback, index) => data.adImages?.[index] || fallback)
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load ad images", error);
+      }
+    };
+
+    fetchAdImages();
   }, []);
 
   useEffect(() => {
