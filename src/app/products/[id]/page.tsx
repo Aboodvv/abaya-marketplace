@@ -387,6 +387,94 @@ export default function ProductDetailsPage() {
           <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
             <div className="mb-6">
               <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "الضمان" : "Warranty"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "سياسة الضمان التفصيلية" : "Detailed warranty policy"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "مدة الضمان" : "Coverage period"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "ضمان 14 يوماً ضد عيوب التصنيع."
+                    : "14-day warranty against manufacturing defects."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "ما يشمله الضمان" : "What’s covered"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "التطريز، الخياطة، وثبات اللون."
+                    : "Embroidery, stitching, and color durability."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "طريقة الاستفادة" : "How to claim"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "تواصلي مع الدعم وارفق رقم الطلب وصورة واضحة."
+                    : "Contact support with order ID and clear photos."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "التخصيص" : "Customization"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "تخصيص العباية بالألوان" : "Color customization"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "لوحة الألوان" : "Color palette"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "متوفر: أسود، كحلي، رملي، موف."
+                    : "Available: black, navy, sand, mauve."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "مدة التنفيذ" : "Lead time"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "التخصيص يحتاج 3-5 أيام عمل إضافية."
+                    : "Customization takes 3-5 additional business days."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "الطلب" : "How to request"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "اكتبي اللون المطلوب في ملاحظات الطلب."
+                    : "Add your preferred color in order notes."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
                 {lang === "ar" ? "اختيار المقاس" : "Size tips"}
               </p>
               <h2 className="text-2xl font-bold text-gray-900">
