@@ -308,6 +308,81 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "المقاسات" : "Sizing"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "دليل المقاسات" : "Size guide"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="flex items-center justify-between border-b border-[#efe7da] pb-3">
+                <span>{lang === "ar" ? "الطول" : "Length"}</span>
+                <span className="font-semibold">{lang === "ar" ? "140-150 سم" : "140-150 cm"}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-[#efe7da] pb-3">
+                <span>{lang === "ar" ? "عرض الأكمام" : "Sleeve"}</span>
+                <span className="font-semibold">{lang === "ar" ? "واسع" : "Relaxed"}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-[#efe7da] pb-3">
+                <span>{lang === "ar" ? "القصة" : "Fit"}</span>
+                <span className="font-semibold">{lang === "ar" ? "مستقيم" : "Straight"}</span>
+              </div>
+              <p className="text-sm text-gray-600">
+                {lang === "ar"
+                  ? "المقاسات تقريبية وقد تختلف بحسب القماش."
+                  : "Measurements are approximate and may vary by fabric."}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "معلومات سريعة" : "Quick answers"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "هل يوجد شحن سريع؟" : "Do you offer express shipping?"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "نعم، الشحن السريع متاح في معظم المدن."
+                    : "Yes, express shipping is available in most cities."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "هل يمكن استبدال المنتج؟" : "Can I exchange the item?"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "يمكن الاستبدال خلال 7 أيام وفقًا للسياسة."
+                    : "Exchanges are available within 7 days per policy."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "كيف أختار المقاس؟" : "How do I choose my size?"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "راجعي دليل المقاسات أو تواصلي معنا للمساعدة."
+                    : "Use the size guide or contact us for help."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-gray-900">
