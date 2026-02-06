@@ -175,6 +175,84 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Ad Banners */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">
+              {t.home.ads.title}
+            </h2>
+            <p className="text-gray-600 text-sm mt-2">{t.home.ads.subtitle}</p>
+          </div>
+          <Link
+            href="/contact"
+            className="inline-flex items-center px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+          >
+            {t.home.ads.cta}
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7 bg-[#0b0b0b] text-white rounded-3xl p-8 border border-[#1e1e1e] relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top,_#c7a86a,_transparent_65%)]" />
+            <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-3">
+              {lang === "ar" ? "بنر إعلاني" : "Sponsored"}
+            </p>
+            <h3 className="text-3xl font-bold mb-3">{t.home.ads.items[0].title}</h3>
+            <p className="text-white/70 mb-6">{t.home.ads.items[0].subtitle}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-white/60">{t.home.ads.items[0].size}</span>
+              <button className="px-4 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition text-sm">
+                {t.home.ads.cta}
+              </button>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {t.home.ads.items.slice(1, 3).map((item, index) => (
+              <div
+                key={`${item.title}-${index}`}
+                className="rounded-3xl border border-[#efe7da] bg-white p-6 shadow-lg"
+              >
+                <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                  {lang === "ar" ? "مساحة" : "Slot"}
+                </p>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h4>
+                <p className="text-gray-600 mb-4">{item.subtitle}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">{item.size}</span>
+                  <span className="text-sm font-semibold text-[#c7a86a]">{t.home.ads.cta}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 bg-white rounded-3xl border border-[#efe7da] p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xl font-bold text-gray-900">{t.home.ads.items[3].title}</h4>
+            <span className="text-sm text-gray-500">{t.home.ads.items[3].size}</span>
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {[...Array(6)].map((_, index) => (
+              <div
+                key={`ad-strip-${index}`}
+                className="min-w-[220px] rounded-2xl border border-[#efe7da] bg-[#f7f4ef] p-4"
+              >
+                <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                  {lang === "ar" ? "إعلان" : "Ad"}
+                </p>
+                <p className="text-gray-700 text-sm">
+                  {lang === "ar"
+                    ? "احجز هذه المساحة لعرض حملتك."
+                    : "Reserve this slot for your campaign."}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Featured Products */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-10">

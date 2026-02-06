@@ -18,6 +18,33 @@ export const translations = {
         timerLabel: "Ends in",
         empty: "No offers available",
       },
+      ads: {
+        title: "Ad Spots For Rent",
+        subtitle: "Feature your brand in premium placements",
+        cta: "Book Now",
+        items: [
+          {
+            title: "Hero Banner",
+            subtitle: "Top exposure across all visitors",
+            size: "Full Width",
+          },
+          {
+            title: "Mega Deals Slot",
+            subtitle: "Right under the countdown",
+            size: "Wide Card",
+          },
+          {
+            title: "Side Spotlight",
+            subtitle: "Perfect for product launches",
+            size: "Tall Banner",
+          },
+          {
+            title: "Footer Strip",
+            subtitle: "Always visible at scroll end",
+            size: "Ribbon",
+          },
+        ],
+      },
       banners: {
         title: "Special Highlights",
         items: [
@@ -142,6 +169,33 @@ export const translations = {
         title: "عروض الميجا",
         timerLabel: "ينتهي خلال",
         empty: "لا توجد عروض حالياً",
+      },
+      ads: {
+        title: "مساحات إعلانية للإيجار",
+        subtitle: "ابرزي علامتك التجارية في مواقع مميزة",
+        cta: "احجز الآن",
+        items: [
+          {
+            title: "بنر البطل",
+            subtitle: "أعلى نسبة ظهور لكل الزوار",
+            size: "عرض كامل",
+          },
+          {
+            title: "مساحة عروض الميجا",
+            subtitle: "أسفل المؤقت مباشرة",
+            size: "بطاقة عريضة",
+          },
+          {
+            title: "واجهة جانبية",
+            subtitle: "مثالية لإطلاق المنتجات",
+            size: "بنر طولي",
+          },
+          {
+            title: "شريط الفوتر",
+            subtitle: "ظهور دائم في نهاية الصفحة",
+            size: "شريط",
+          },
+        ],
       },
       banners: {
         title: "أبرز العروض",
