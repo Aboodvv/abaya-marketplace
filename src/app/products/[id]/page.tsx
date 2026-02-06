@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,13 +10,21 @@ import { products as localProducts } from "@/data/products";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart, Product } from "@/context/CartContext";
 import ProductCard from "@/components/ProductCard";
+import { useAuth } from "@/context/AuthContext";
+import { useReviews, Review } from "@/context/ReviewsContext";
 
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { lang, t } = useLanguage();
   const { addToCart } = useCart();
+  const { user, userProfile } = useAuth();
+  const { addReview, getReviewsByProduct } = useReviews();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -39,6 +47,22 @@ export default function ProductDetailsPage() {
 
     loadProduct();
   }, [id]);
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (!product) return;
+      const data = await getReviewsByProduct(product.id);
+      setReviews(data);
+    };
+
+    loadReviews();
+  }, [getReviewsByProduct, product]);
+
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) return 0;
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return total / reviews.length;
+  }, [reviews]);
 
   if (loading) {
     return (
@@ -74,6 +98,24 @@ export default function ProductDetailsPage() {
     .filter((item) => item.category === product.category)
     .slice(0, 3);
   const fallbackProducts = localProducts.filter((item) => item.id !== product.id).slice(0, 3);
+
+  const handleSubmitReview = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!user || !userProfile) return;
+    setSubmitting(true);
+    await addReview({
+      productId: product.id,
+      userId: user.uid,
+      userName: userProfile.name,
+      rating,
+      comment,
+    });
+    const data = await getReviewsByProduct(product.id);
+    setReviews(data);
+    setComment("");
+    setRating(5);
+    setSubmitting(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#f7f4ef]">
@@ -187,6 +229,82 @@ export default function ProductDetailsPage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="mt-16">
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                  {lang === "ar" ? "التقييمات" : "Reviews"}
+                </p>
+                <h2 className="text-3xl font-bold text-gray-900">
+                  {t.reviews.title}
+                </h2>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <span className="text-[#c7a86a] text-xl">★</span>
+                <span className="font-semibold">{averageRating.toFixed(1)}</span>
+                <span className="text-sm">({reviews.length})</span>
+              </div>
+            </div>
+
+            {user ? (
+              <form onSubmit={handleSubmitReview} className="mb-6 space-y-3">
+                <div className="flex items-center gap-3">
+                  <label className="text-sm text-gray-600">{t.reviews.rating}</label>
+                  <select
+                    value={rating}
+                    onChange={(e) => setRating(Number(e.target.value))}
+                    className="border border-[#efe7da] rounded-full px-3 py-1 text-sm"
+                  >
+                    {[5, 4, 3, 2, 1].map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder={t.reviews.comment}
+                  className="w-full border border-[#efe7da] rounded-3xl px-4 py-3 text-sm"
+                  rows={3}
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className={`px-6 py-3 rounded-full text-black text-sm font-semibold ${
+                    submitting ? "bg-gray-300" : "bg-[#c7a86a] hover:bg-[#b59659]"
+                  }`}
+                >
+                  {submitting ? t.common.loading : t.reviews.submit}
+                </button>
+              </form>
+            ) : (
+              <p className="text-sm text-gray-600 mb-4">{t.reviews.loginToReview}</p>
+            )}
+
+            {reviews.length === 0 ? (
+              <p className="text-sm text-gray-600">{t.reviews.empty}</p>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="border border-[#efe7da] rounded-2xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="font-semibold text-gray-900">
+                        {review.userName}
+                      </p>
+                      <p className="text-[#c7a86a]">{"★".repeat(review.rating)}</p>
+                    </div>
+                    <p className="text-gray-700 text-sm">{review.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
