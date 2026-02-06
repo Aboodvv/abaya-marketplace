@@ -383,6 +383,94 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "خدمات ما بعد البيع" : "After-sale"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "خدمة ما بعد البيع" : "After-sales support"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "تعديلات بسيطة" : "Minor adjustments"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "نوفر تعديلات بسيطة حسب الطلب خلال 48 ساعة."
+                    : "We offer minor adjustments on request within 48 hours."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "دعم فني" : "Customer support"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "فريق الدعم جاهز لخدمتك عبر البريد أو الواتساب."
+                    : "Our support team is available via email or WhatsApp."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "تجربة آمنة" : "Safe experience"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "خدمة موثوقة مع متابعة حتى استلام الطلب."
+                    : "Reliable service with order tracking until delivery."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "ضمان الجودة" : "Quality"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "ضمان الجودة" : "Quality assurance"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "فحص الجودة" : "Quality checks"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "يتم فحص كل قطعة بعناية قبل الشحن."
+                    : "Each piece is inspected carefully before shipping."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "خامات موثوقة" : "Trusted fabrics"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "خامات مختارة لضمان نعومة وثبات اللون."
+                    : "Selected materials for softness and color durability."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "تغليف فاخر" : "Premium packaging"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "تغليف أنيق يحافظ على المنتج أثناء الشحن."
+                    : "Elegant packaging that protects your order."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-gray-900">
