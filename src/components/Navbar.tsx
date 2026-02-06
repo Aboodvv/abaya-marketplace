@@ -48,6 +48,9 @@ export default function Navbar() {
               <Link href="/products" className="hover:text-[#c7a86a] transition">
                 {t.nav.products}
               </Link>
+              <Link href="/seller/login" className="hover:text-[#c7a86a] transition">
+                {t.nav.seller}
+              </Link>
               <Link href="/admin" className="hover:text-[#c7a86a] transition">
                 {t.nav.admin}
               </Link>

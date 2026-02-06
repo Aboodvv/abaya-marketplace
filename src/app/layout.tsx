@@ -5,6 +5,7 @@ import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider, useLanguage } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { SellerProvider } from "@/context/SellerContext";
 import { OrdersProvider } from "@/context/OrdersContext";
 import { ReviewsProvider } from "@/context/ReviewsContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
@@ -42,17 +43,19 @@ export default function RootLayout({
 }>) {
   return (
     <AuthProvider>
-      <LanguageProvider>
-        <CartProvider>
-          <OrdersProvider>
-            <ReviewsProvider>
-              <NotificationsProvider>
-                <LayoutContent>{children}</LayoutContent>
-              </NotificationsProvider>
-            </ReviewsProvider>
-          </OrdersProvider>
-        </CartProvider>
-      </LanguageProvider>
+      <SellerProvider>
+        <LanguageProvider>
+          <CartProvider>
+            <OrdersProvider>
+              <ReviewsProvider>
+                <NotificationsProvider>
+                  <LayoutContent>{children}</LayoutContent>
+                </NotificationsProvider>
+              </ReviewsProvider>
+            </OrdersProvider>
+          </CartProvider>
+        </LanguageProvider>
+      </SellerProvider>
     </AuthProvider>
   );
 }

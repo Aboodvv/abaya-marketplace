@@ -13,6 +13,9 @@ export interface Product {
   category: string;
   categoryAr: string;
   inStock: boolean;
+  sellerId?: string;
+  sellerName?: string;
+  storeName?: string;
 }
 
 export interface CartItem extends Product {

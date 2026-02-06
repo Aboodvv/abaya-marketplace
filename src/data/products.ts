@@ -12,6 +12,9 @@ export const products: Product[] = [
     category: "classic",
     categoryAr: "كلاسيكي",
     inStock: true,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
   {
     id: "2",
@@ -24,6 +27,9 @@ export const products: Product[] = [
     category: "luxury",
     categoryAr: "فاخر",
     inStock: true,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
   {
     id: "3",
@@ -36,6 +42,9 @@ export const products: Product[] = [
     category: "modern",
     categoryAr: "عصري",
     inStock: true,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
   {
     id: "4",
@@ -48,6 +57,9 @@ export const products: Product[] = [
     category: "evening",
     categoryAr: "مسائي",
     inStock: false,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
   {
     id: "5",
@@ -60,6 +72,9 @@ export const products: Product[] = [
     category: "casual",
     categoryAr: "يومي",
     inStock: true,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
   {
     id: "6",
@@ -72,6 +87,9 @@ export const products: Product[] = [
     category: "classic",
     categoryAr: "كلاسيكي",
     inStock: true,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
   {
     id: "7",
@@ -84,6 +102,9 @@ export const products: Product[] = [
     category: "offers",
     categoryAr: "عروض",
     inStock: true,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
   {
     id: "8",
@@ -96,5 +117,8 @@ export const products: Product[] = [
     category: "offers",
     categoryAr: "عروض",
     inStock: true,
+    sellerId: "platform",
+    sellerName: "Abaya Store",
+    storeName: "Abaya Store",
   },
 ];

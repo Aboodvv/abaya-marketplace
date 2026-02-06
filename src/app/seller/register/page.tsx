@@ -1,0 +1,151 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase";
+import { useLanguage } from "@/context/LanguageContext";
+import { useSeller } from "@/context/SellerContext";
+
+export default function SellerRegisterPage() {
+  const { t, lang } = useLanguage();
+  const { registerSeller } = useSeller();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    storeName: "",
+    storeCategory: "",
+    username: "",
+    password: "",
+  });
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!documentFile) {
+      setError(lang === "ar" ? "يرجى رفع الوثيقة" : "Please upload the document");
+      return;
+    }
+    setLoading(true);
+    try {
+      const tempPath = `seller-documents/${Date.now()}-${documentFile.name}`;
+      const docRef = ref(storage, tempPath);
+      await uploadBytes(docRef, documentFile);
+      const documentUrl = await getDownloadURL(docRef);
+
+      await registerSeller({
+        ...form,
+        documentUrl,
+      });
+
+      router.push("/seller/dashboard");
+    } catch (err: any) {
+      setError(err.message || (lang === "ar" ? "فشل تسجيل البائع" : "Failed to register"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4 py-10">
+      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-lg w-full border border-[#efe7da]">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
+          {t.seller.register}
+        </h1>
+        <p className="text-gray-600 mb-6 text-center">{t.seller.title}</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder={t.seller.name}
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+            required
+          />
+          <input
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder={t.seller.phone}
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+            required
+          />
+          <input
+            name="storeName"
+            value={form.storeName}
+            onChange={handleChange}
+            placeholder={t.seller.storeName}
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+            required
+          />
+          <input
+            name="storeCategory"
+            value={form.storeCategory}
+            onChange={handleChange}
+            placeholder={t.seller.storeCategory}
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+            required
+          />
+          <input
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            placeholder={t.seller.username}
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+            required
+          />
+          <input
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder={t.seller.password}
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+            required
+          />
+          <label className="block text-sm text-gray-700">
+            {t.seller.document}
+          </label>
+          <input
+            type="file"
+            accept="image/*,.pdf"
+            onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
+            className="w-full border border-[#efe7da] rounded-2xl px-4 py-3 bg-white"
+            required
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 rounded-full font-semibold transition ${
+              loading ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+            }`}
+          >
+            {loading ? t.common.loading : t.seller.submit}
+          </button>
+        </form>
+
+        <p className="text-center text-gray-600 mt-6">
+          {lang === "ar" ? "لديك حساب؟" : "Already have an account?"} {" "}
+          <Link href="/seller/login" className="text-[#c7a86a] font-semibold hover:underline">
+            {t.seller.login}
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}

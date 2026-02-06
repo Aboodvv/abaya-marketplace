@@ -1,0 +1,415 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useLanguage } from "@/context/LanguageContext";
+import { useSeller } from "@/context/SellerContext";
+import { Product } from "@/context/CartContext";
+
+interface SellerOrderItem {
+  sellerId?: string;
+  price: number;
+  quantity: number;
+}
+
+interface SellerOrder {
+  id: string;
+  items: SellerOrderItem[];
+  total: number;
+  createdAt: string;
+}
+
+interface Withdrawal {
+  id: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+export default function SellerDashboardPage() {
+  const { t, lang } = useLanguage();
+  const { sellerUser, sellerProfile, loading: sellerLoading, logoutSeller } = useSeller();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<SellerOrder[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [form, setForm] = useState({
+    name: "",
+    nameAr: "",
+    price: "",
+    image: "",
+    description: "",
+    descriptionAr: "",
+    category: "",
+    categoryAr: "",
+    inStock: true,
+  });
+  const [savingProduct, setSavingProduct] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [savingWithdraw, setSavingWithdraw] = useState(false);
+
+  useEffect(() => {
+    if (!sellerUser) return;
+    const loadProducts = async () => {
+      const q = query(collection(db, "products"), where("sellerId", "==", sellerUser.uid));
+      const snapshot = await getDocs(q);
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Product, "id">),
+      }));
+      setProducts(list);
+    };
+    loadProducts();
+  }, [sellerUser]);
+
+  useEffect(() => {
+    if (!sellerUser) return;
+    const loadOrders = async () => {
+      const snapshot = await getDocs(collection(db, "orders"));
+      const list = snapshot.docs
+        .map((docSnap) => ({
+          id: docSnap.id,
+          ...(docSnap.data() as Omit<SellerOrder, "id">),
+        }))
+        .filter((order) =>
+          order.items?.some((item) => item.sellerId === sellerUser.uid)
+        );
+      setOrders(list as SellerOrder[]);
+    };
+
+    const loadWithdrawals = async () => {
+      const q = query(collection(db, "withdrawals"), where("sellerId", "==", sellerUser.uid));
+      const snapshot = await getDocs(q);
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Withdrawal, "id">),
+      }));
+      setWithdrawals(list as Withdrawal[]);
+    };
+
+    loadOrders();
+    loadWithdrawals();
+  }, [sellerUser]);
+
+  const totalSales = useMemo(() => {
+    if (!sellerUser) return 0;
+    return orders.reduce((sum, order) => {
+      const sellerItems = order.items.filter((item) => item.sellerId === sellerUser.uid);
+      const sellerTotal = sellerItems.reduce(
+        (itemSum, item) => itemSum + item.price * item.quantity,
+        0
+      );
+      return sum + sellerTotal;
+    }, 0);
+  }, [orders, sellerUser]);
+
+  const withdrawnTotal = useMemo(
+    () => withdrawals.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    [withdrawals]
+  );
+  const availableBalance = Math.max(0, totalSales - withdrawnTotal);
+
+  const handleProductChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sellerUser || !sellerProfile) return;
+    setSavingProduct(true);
+    await addDoc(collection(db, "products"), {
+      ...form,
+      price: Number(form.price),
+      sellerId: sellerUser.uid,
+      sellerName: sellerProfile.name,
+      storeName: sellerProfile.storeName,
+      createdAt: new Date().toISOString(),
+    });
+    setForm({
+      name: "",
+      nameAr: "",
+      price: "",
+      image: "",
+      description: "",
+      descriptionAr: "",
+      category: "",
+      categoryAr: "",
+      inStock: true,
+    });
+    setSavingProduct(false);
+    const q = query(collection(db, "products"), where("sellerId", "==", sellerUser.uid));
+    const snapshot = await getDocs(q);
+    const list = snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...(docSnap.data() as Omit<Product, "id">),
+    }));
+    setProducts(list);
+  };
+
+  const handleWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sellerUser) return;
+    const amount = Number(withdrawAmount);
+    if (!amount || amount <= 0) return;
+    setSavingWithdraw(true);
+    await addDoc(collection(db, "withdrawals"), {
+      sellerId: sellerUser.uid,
+      amount,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    });
+    setWithdrawAmount("");
+    setSavingWithdraw(false);
+    const snapshot = await getDocs(
+      query(collection(db, "withdrawals"), where("sellerId", "==", sellerUser.uid))
+    );
+    const list = snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...(docSnap.data() as Omit<Withdrawal, "id">),
+    }));
+    setWithdrawals(list as Withdrawal[]);
+  };
+
+  if (sellerLoading) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
+        <p className="text-gray-600">{t.common.loading}</p>
+      </div>
+    );
+  }
+
+  if (!sellerUser || !sellerProfile) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            {lang === "ar" ? "يجب تسجيل الدخول كبائع" : "Please login as seller"}
+          </h1>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/seller/login"
+              className="px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold"
+            >
+              {t.seller.login}
+            </Link>
+            <Link
+              href="/seller/register"
+              className="px-6 py-3 rounded-full border border-[#c7a86a] text-[#7a5a1f] font-semibold"
+            >
+              {t.seller.register}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f7f4ef] py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">{t.seller.dashboard}</h1>
+            <p className="text-gray-600 mt-2">{sellerProfile.storeName}</p>
+          </div>
+          <button
+            onClick={logoutSeller}
+            className="px-5 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition"
+          >
+            {lang === "ar" ? "تسجيل الخروج" : "Logout"}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
+            <p className="text-sm text-gray-500">{t.seller.totalSales}</p>
+            <p className="text-2xl font-bold text-gray-900 mt-2">${totalSales.toFixed(2)}</p>
+          </div>
+          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
+            <p className="text-sm text-gray-500">{t.seller.orders}</p>
+            <p className="text-2xl font-bold text-gray-900 mt-2">{orders.length}</p>
+          </div>
+          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
+            <p className="text-sm text-gray-500">{t.seller.availableBalance}</p>
+            <p className="text-2xl font-bold text-gray-900 mt-2">${availableBalance.toFixed(2)}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.addProduct}</h2>
+            <form onSubmit={handleAddProduct} className="space-y-4">
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleProductChange}
+                placeholder={lang === "ar" ? "الاسم (EN)" : "Name (EN)"}
+                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                required
+              />
+              <input
+                name="nameAr"
+                value={form.nameAr}
+                onChange={handleProductChange}
+                placeholder={lang === "ar" ? "الاسم (AR)" : "Name (AR)"}
+                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                required
+              />
+              <input
+                name="price"
+                type="number"
+                min="0"
+                value={form.price}
+                onChange={handleProductChange}
+                placeholder={t.admin.price}
+                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                required
+              />
+              <input
+                name="image"
+                value={form.image}
+                onChange={handleProductChange}
+                placeholder={t.admin.image}
+                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                required
+              />
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleProductChange}
+                placeholder={t.admin.descriptionEn}
+                className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
+                rows={2}
+              />
+              <textarea
+                name="descriptionAr"
+                value={form.descriptionAr}
+                onChange={handleProductChange}
+                placeholder={t.admin.descriptionAr}
+                className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
+                rows={2}
+              />
+              <input
+                name="category"
+                value={form.category}
+                onChange={handleProductChange}
+                placeholder={t.admin.categoryEn}
+                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                required
+              />
+              <input
+                name="categoryAr"
+                value={form.categoryAr}
+                onChange={handleProductChange}
+                placeholder={t.admin.categoryAr}
+                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                required
+              />
+              <label className="flex items-center gap-2 text-gray-700">
+                <input
+                  type="checkbox"
+                  name="inStock"
+                  checked={form.inStock}
+                  onChange={handleProductChange}
+                />
+                {t.admin.inStock}
+              </label>
+              <button
+                type="submit"
+                disabled={savingProduct}
+                className={`w-full py-3 rounded-full font-semibold transition ${
+                  savingProduct ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+                }`}
+              >
+                {savingProduct ? t.common.loading : t.seller.addProduct}
+              </button>
+            </form>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.wallet}</h2>
+            <div className="space-y-3 mb-6">
+              <p className="text-gray-600">
+                {t.seller.totalSales}: <span className="font-semibold">${totalSales.toFixed(2)}</span>
+              </p>
+              <p className="text-gray-600">
+                {t.seller.availableBalance}:{" "}
+                <span className="font-semibold">${availableBalance.toFixed(2)}</span>
+              </p>
+            </div>
+            <form onSubmit={handleWithdraw} className="space-y-4">
+              <input
+                type="number"
+                min="0"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                placeholder={lang === "ar" ? "مبلغ السحب" : "Withdraw amount"}
+                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                required
+              />
+              <button
+                type="submit"
+                disabled={savingWithdraw}
+                className={`w-full py-3 rounded-full font-semibold transition ${
+                  savingWithdraw ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+                }`}
+              >
+                {savingWithdraw ? t.common.loading : t.seller.withdraw}
+              </button>
+            </form>
+            <div className="mt-6 space-y-3">
+              {withdrawals.map((item) => (
+                <div key={item.id} className="flex items-center justify-between text-sm text-gray-600">
+                  <span>${Number(item.amount).toFixed(2)}</span>
+                  <span>{item.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.myProducts}</h2>
+          {products.length === 0 ? (
+            <p className="text-gray-600">{lang === "ar" ? "لا توجد منتجات بعد" : "No products yet"}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <div key={product.id} className="border border-[#efe7da] rounded-2xl overflow-hidden">
+                  <div className="relative h-40">
+                    <Image
+                      src={product.image}
+                      alt={lang === "ar" ? product.nameAr : product.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900">
+                      {lang === "ar" ? product.nameAr : product.name}
+                    </h3>
+                    <p className="text-sm text-gray-600">${product.price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

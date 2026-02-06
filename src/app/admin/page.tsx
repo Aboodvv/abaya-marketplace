@@ -92,6 +92,9 @@ export default function AdminPage() {
     await addDoc(productsRef, {
       ...form,
       price: Number(form.price),
+      sellerId: "platform",
+      sellerName: "Abaya Store",
+      storeName: "Abaya Store",
       createdAt: new Date().toISOString(),
     });
     setForm(emptyProduct);
