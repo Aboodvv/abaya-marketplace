@@ -387,6 +387,68 @@ export default function ProductDetailsPage() {
           <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
             <div className="mb-6">
               <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "الدفع" : "Payments"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "طرق الدفع المتاحة" : "Available payment methods"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">{lang === "ar" ? "بطاقات" : "Cards"}</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar" ? "Visa / MasterCard / Mada" : "Visa / MasterCard / Mada"}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">{lang === "ar" ? "الدفع الآمن" : "Secure checkout"}</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "مدفوعات مشفرة عبر Stripe."
+                    : "Encrypted payments powered by Stripe."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
+                {lang === "ar" ? "الاسترجاع" : "Returns"}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lang === "ar" ? "ضمان الاسترجاع السريع" : "Fast return guarantee"}
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-700">
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "7 أيام" : "7 days"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "استرجاع سريع خلال 7 أيام من الاستلام."
+                    : "Quick returns within 7 days of delivery."}
+                </p>
+              </div>
+              <div className="border border-[#efe7da] rounded-2xl p-4">
+                <p className="font-semibold text-gray-900">
+                  {lang === "ar" ? "سهلة وبسيطة" : "Easy process"}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  {lang === "ar"
+                    ? "تواصل معنا وسيتم ترتيب الاسترجاع فورًا."
+                    : "Contact us and we’ll arrange the return promptly."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-2">
                 {lang === "ar" ? "الضمان" : "Warranty"}
               </p>
               <h2 className="text-2xl font-bold text-gray-900">
