@@ -13,6 +13,11 @@ export const translations = {
         subtitle: "Premium collection of traditional and modern abayas",
         cta: "Shop Now",
       },
+      mega: {
+        title: "Mega Deals",
+        timerLabel: "Ends in",
+        empty: "No offers available",
+      },
       banners: {
         title: "Special Highlights",
         items: [
@@ -132,6 +137,11 @@ export const translations = {
         title: "اكتشفي العبايات الأنيقة",
         subtitle: "مجموعة فاخرة من العبايات التقليدية والعصرية",
         cta: "تسوقي الآن",
+      },
+      mega: {
+        title: "عروض الميجا",
+        timerLabel: "ينتهي خلال",
+        empty: "لا توجد عروض حالياً",
       },
       banners: {
         title: "أبرز العروض",

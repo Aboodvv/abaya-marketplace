@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { products as localProducts } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
@@ -12,6 +12,8 @@ import { Product } from "@/context/CartContext";
 export default function Home() {
   const { t, lang } = useLanguage();
   const [products, setProducts] = useState<Product[]>(localProducts);
+  const megaDealHours = 24; // عدّل الرقم لتغيير مدة المؤقت
+  const [timeLeftMs, setTimeLeftMs] = useState(megaDealHours * 60 * 60 * 1000);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -28,7 +30,31 @@ export default function Home() {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    const endTime = Date.now() + megaDealHours * 60 * 60 * 1000;
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, endTime - Date.now());
+      setTimeLeftMs(remaining);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [megaDealHours]);
+
   const featuredProducts = products.slice(0, 3);
+  const offersProducts = useMemo(
+    () =>
+      products.filter(
+        (product) => product.category === "offers" || product.categoryAr === "عروض"
+      ),
+    [products]
+  );
+  const timeParts = useMemo(() => {
+    const totalSeconds = Math.floor(timeLeftMs / 1000);
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    return { hours, minutes, seconds };
+  }, [timeLeftMs]);
 
   return (
     <div className="min-h-screen bg-[#f7f4ef] text-[#1a1a1a]">
@@ -109,6 +135,43 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Mega Deals */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 border border-[#efe7da]">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">
+                {t.home.mega.title}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {t.home.mega.timerLabel} {timeParts.hours}:{timeParts.minutes}:{timeParts.seconds}
+              </p>
+            </div>
+            <Link
+              href="/products"
+              className="text-[#c7a86a] font-semibold hover:underline"
+            >
+              {t.products.title}
+            </Link>
+          </div>
+
+          {offersProducts.length === 0 ? (
+            <p className="text-gray-600 text-sm">{t.home.mega.empty}</p>
+          ) : (
+            <div className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory">
+              {offersProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="min-w-[260px] sm:min-w-[280px] md:min-w-[320px] snap-start"
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
