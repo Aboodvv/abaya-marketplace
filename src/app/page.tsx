@@ -14,13 +14,54 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>(localProducts);
   const megaDealHours = 24; // عدّل الرقم لتغيير مدة المؤقت
   const [timeLeftMs, setTimeLeftMs] = useState(megaDealHours * 60 * 60 * 1000);
+  const defaultBookingLink = "https://iwtsp.com/966550514533";
   const defaultAdImages = [
     "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=900&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=900&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=900&auto=format&fit=crop",
   ];
+  const defaultAdItems = [
+    {
+      title: "Hero Banner",
+      titleAr: "بنر البطل",
+      subtitle: "Top exposure across all visitors",
+      subtitleAr: "أعلى نسبة ظهور لكل الزوار",
+      size: "Full Width",
+      sizeAr: "عرض كامل",
+      link: defaultBookingLink,
+    },
+    {
+      title: "Mega Deals Slot",
+      titleAr: "مساحة عروض الميجا",
+      subtitle: "Right under the countdown",
+      subtitleAr: "أسفل المؤقت مباشرة",
+      size: "Wide Card",
+      sizeAr: "بطاقة عريضة",
+      link: defaultBookingLink,
+    },
+    {
+      title: "Side Spotlight",
+      titleAr: "واجهة جانبية",
+      subtitle: "Perfect for product launches",
+      subtitleAr: "مثالية لإطلاق المنتجات",
+      size: "Tall Banner",
+      sizeAr: "بنر طولي",
+      link: defaultBookingLink,
+    },
+    {
+      title: "Footer Strip",
+      titleAr: "شريط الفوتر",
+      subtitle: "Always visible at scroll end",
+      subtitleAr: "ظهور دائم في نهاية الصفحة",
+      size: "Ribbon",
+      sizeAr: "شريط",
+      link: defaultBookingLink,
+    },
+  ];
   const [adImages, setAdImages] = useState<string[]>(defaultAdImages);
+  const [adItems, setAdItems] = useState(defaultAdItems);
+  const [bookingLink, setBookingLink] = useState(defaultBookingLink);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -42,11 +83,26 @@ export default function Home() {
       try {
         const snapshot = await getDoc(doc(db, "settings", "homeAds"));
         if (snapshot.exists()) {
-          const data = snapshot.data() as { adImages?: string[] };
+          const data = snapshot.data() as {
+            adImages?: string[];
+            adItems?: typeof defaultAdItems;
+            bookingLink?: string;
+          };
           if (data.adImages && data.adImages.length > 0) {
             setAdImages(
               defaultAdImages.map((fallback, index) => data.adImages?.[index] || fallback)
             );
+          }
+          if (data.adItems && data.adItems.length > 0) {
+            setAdItems(
+              defaultAdItems.map((fallback, index) => ({
+                ...fallback,
+                ...(data.adItems?.[index] || {}),
+              }))
+            );
+          }
+          if (data.bookingLink) {
+            setBookingLink(data.bookingLink);
           }
         }
       } catch (error) {
@@ -82,6 +138,9 @@ export default function Home() {
     const seconds = String(totalSeconds % 60).padStart(2, "0");
     return { hours, minutes, seconds };
   }, [timeLeftMs]);
+  const resolveText = (item: (typeof defaultAdItems)[number], key: "title" | "subtitle" | "size") =>
+    lang === "ar" ? item[`${key}Ar` as const] || item[key] : item[key] || item[`${key}Ar` as const];
+  const resolveLink = (item: (typeof defaultAdItems)[number]) => item.link || bookingLink;
 
   return (
     <div className="min-h-screen bg-[#f7f4ef] text-[#1a1a1a]">
@@ -212,7 +271,7 @@ export default function Home() {
             <p className="text-gray-600 text-sm mt-2">{t.home.ads.subtitle}</p>
           </div>
           <Link
-            href="https://iwtsp.com/966550514533"
+            href={bookingLink}
             className="inline-flex items-center px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
             target="_blank"
             rel="noopener noreferrer"
@@ -236,12 +295,12 @@ export default function Home() {
               <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-3">
                 {lang === "ar" ? "بنر إعلاني" : "Sponsored"}
               </p>
-              <h3 className="text-3xl font-bold mb-3">{t.home.ads.items[0].title}</h3>
-              <p className="text-white/70 mb-6">{t.home.ads.items[0].subtitle}</p>
+              <h3 className="text-3xl font-bold mb-3">{resolveText(adItems[0], "title")}</h3>
+              <p className="text-white/70 mb-6">{resolveText(adItems[0], "subtitle")}</p>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/60">{t.home.ads.items[0].size}</span>
+                <span className="text-sm text-white/60">{resolveText(adItems[0], "size")}</span>
                   <Link
-                    href="https://iwtsp.com/966550514533"
+                    href={resolveLink(adItems[0])}
                     className="px-4 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition text-sm"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -253,7 +312,7 @@ export default function Home() {
           </div>
 
           <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {t.home.ads.items.slice(1, 3).map((item, index) => (
+            {adItems.slice(1, 3).map((item, index) => (
               <div
                 key={`${item.title}-${index}`}
                 className="rounded-3xl border border-[#efe7da] bg-white p-6 shadow-lg relative overflow-hidden"
@@ -268,12 +327,12 @@ export default function Home() {
                 <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
                   {lang === "ar" ? "مساحة" : "Slot"}
                 </p>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h4>
-                <p className="text-gray-600 mb-4">{item.subtitle}</p>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">{resolveText(item, "title")}</h4>
+                <p className="text-gray-600 mb-4">{resolveText(item, "subtitle")}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">{item.size}</span>
+                  <span className="text-sm text-gray-500">{resolveText(item, "size")}</span>
                   <Link
-                    href="https://iwtsp.com/966550514533"
+                    href={resolveLink(item)}
                     className="text-sm font-semibold text-[#c7a86a] hover:underline"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -299,12 +358,12 @@ export default function Home() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h4 className="text-2xl md:text-3xl font-bold text-white">
-                  {t.home.ads.items[3].title}
+                  {resolveText(adItems[3], "title")}
                 </h4>
-                <p className="text-sm text-white/70">{t.home.ads.items[3].size}</p>
+                <p className="text-sm text-white/70">{resolveText(adItems[3], "size")}</p>
               </div>
               <Link
-                href="https://iwtsp.com/966550514533"
+                href={resolveLink(adItems[3])}
                 className="px-5 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -331,7 +390,7 @@ export default function Home() {
                             : "Wide moving banner for your campaigns."}
                         </p>
                         <Link
-                          href="https://iwtsp.com/966550514533"
+                          href={resolveLink(adItems[3])}
                           className="text-sm font-semibold text-[#c7a86a] hover:underline"
                           target="_blank"
                           rel="noopener noreferrer"
