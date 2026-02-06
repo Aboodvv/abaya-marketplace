@@ -27,6 +27,14 @@ interface AdminProduct {
   createdAt: string;
 }
 
+interface WithdrawalRequest {
+  id: string;
+  sellerId: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
 const emptyProduct = {
   name: "",
   nameAr: "",
@@ -43,6 +51,9 @@ export default function AdminPage() {
   const { lang, t } = useLanguage();
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
+  const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,6 +75,21 @@ export default function AdminPage() {
   useEffect(() => {
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const loadWithdrawals = async () => {
+      setLoadingWithdrawals(true);
+      const snapshot = await getDocs(collection(db, "withdrawals"));
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
+      }));
+      setWithdrawals(list);
+      setLoadingWithdrawals(false);
+    };
+
+    loadWithdrawals();
   }, []);
 
   const handleChange = (
@@ -134,6 +160,18 @@ export default function AdminPage() {
     await loadProducts();
   };
 
+  const updateWithdrawalStatus = async (withdrawalId: string, status: string) => {
+    setUpdatingWithdrawals(withdrawalId);
+    await updateDoc(doc(db, "withdrawals", withdrawalId), { status });
+    const snapshot = await getDocs(collection(db, "withdrawals"));
+    const list = snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
+    }));
+    setWithdrawals(list);
+    setUpdatingWithdrawals(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f4ef] py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -167,7 +205,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-6 mb-10 border border-[#efe7da]">
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             {t.admin.addProduct}
           </h2>
@@ -260,6 +298,57 @@ export default function AdminPage() {
               {saving ? t.common.loading : t.admin.save}
             </button>
           </form>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-10 border border-[#efe7da]">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            {lang === "ar" ? "طلبات سحب الأرباح" : "Withdrawal Requests"}
+          </h2>
+          {loadingWithdrawals ? (
+            <p className="text-gray-600">{t.common.loading}</p>
+          ) : withdrawals.length === 0 ? (
+            <p className="text-gray-600">
+              {lang === "ar" ? "لا توجد طلبات سحب" : "No withdrawal requests"}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {withdrawals.map((request) => (
+                <div
+                  key={request.id}
+                  className="border border-[#efe7da] rounded-3xl p-4 flex flex-wrap items-center justify-between gap-4"
+                >
+                  <div>
+                    <p className="text-sm text-gray-500">{lang === "ar" ? "البائع" : "Seller"}</p>
+                    <p className="font-semibold text-gray-900">{request.sellerId}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">{lang === "ar" ? "المبلغ" : "Amount"}</p>
+                    <p className="font-semibold text-gray-900">${Number(request.amount).toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">{lang === "ar" ? "الحالة" : "Status"}</p>
+                    <p className="font-semibold text-gray-900">{request.status}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateWithdrawalStatus(request.id, "approved")}
+                      disabled={updatingWithdrawals === request.id}
+                      className="px-4 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659]"
+                    >
+                      {lang === "ar" ? "موافقة" : "Approve"}
+                    </button>
+                    <button
+                      onClick={() => updateWithdrawalStatus(request.id, "rejected")}
+                      disabled={updatingWithdrawals === request.id}
+                      className="px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
+                    >
+                      {lang === "ar" ? "رفض" : "Reject"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
