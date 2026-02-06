@@ -187,6 +187,8 @@ export default function Home() {
           <Link
             href="https://iwtsp.com/966550514533"
             className="inline-flex items-center px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             {t.home.ads.cta}
           </Link>
@@ -205,6 +207,8 @@ export default function Home() {
                 <Link
                   href="https://iwtsp.com/966550514533"
                   className="px-4 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition text-sm"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   {t.home.ads.cta}
                 </Link>
@@ -227,6 +231,8 @@ export default function Home() {
                   <Link
                     href="https://iwtsp.com/966550514533"
                     className="text-sm font-semibold text-[#c7a86a] hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {t.home.ads.cta}
                   </Link>
@@ -258,6 +264,8 @@ export default function Home() {
                 <Link
                   href="https://iwtsp.com/966550514533"
                   className="text-sm font-semibold text-[#c7a86a] hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   {t.home.ads.cta}
                 </Link>
