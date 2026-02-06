@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSeller } from "@/context/SellerContext";
 
@@ -14,6 +12,8 @@ export default function SellerRegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const usernamePattern = /^[a-z0-9._-]+$/i;
+  const maxDocumentSizeMb = 5;
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -36,16 +36,46 @@ export default function SellerRegisterPage() {
       setError(lang === "ar" ? "يرجى رفع الوثيقة" : "Please upload the document");
       return;
     }
+    if (documentFile.size > maxDocumentSizeMb * 1024 * 1024) {
+      setError(
+        lang === "ar"
+          ? `حجم الملف كبير، الحد الأقصى ${maxDocumentSizeMb}MB`
+          : `File is too large. Max ${maxDocumentSizeMb}MB`
+      );
+      return;
+    }
+    if (!usernamePattern.test(form.username.trim())) {
+      setError(
+        lang === "ar"
+          ? "اسم المستخدم يجب أن يحتوي على حروف/أرقام فقط ويمكن استخدام . _ -"
+          : "Username must contain only letters/numbers and may include . _ -"
+      );
+      return;
+    }
     setLoading(true);
     try {
-      const tempPath = `seller-documents/${Date.now()}-${documentFile.name}`;
-      const docRef = ref(storage, tempPath);
-      await uploadBytes(docRef, documentFile);
-      const documentUrl = await getDownloadURL(docRef);
-
-      await registerSeller({
-        ...form,
-        documentUrl,
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(
+            new Error(
+              lang === "ar"
+                ? "العملية تأخرت، حاول مرة أخرى"
+                : "Request timed out, please try again"
+            )
+          );
+        }, 20000);
+        registerSeller({
+          ...form,
+          documentFile,
+        })
+          .then(() => {
+            clearTimeout(timer);
+            resolve();
+          })
+          .catch((error) => {
+            clearTimeout(timer);
+            reject(error);
+          });
       });
 
       router.push("/seller/dashboard");
@@ -63,6 +93,11 @@ export default function SellerRegisterPage() {
           {t.seller.register}
         </h1>
         <p className="text-gray-600 mb-6 text-center">{t.seller.title}</p>
+        <p className="text-sm text-gray-500 mb-6 text-center">
+          {lang === "ar"
+            ? "سيتم مراجعة تسجيلك قبل تفعيل إضافة المنتجات."
+            : "Your registration will be reviewed before product access is enabled."}
+        </p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>

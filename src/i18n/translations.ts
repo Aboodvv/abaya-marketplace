@@ -2,6 +2,9 @@ export const translations = {
   en: {
     nav: {
       home: "Home",
+      offers: "Offers",
+      favorites: "Favorites",
+      account: "Account",
       products: "Products",
       cart: "Cart",
       login: "Login",
@@ -173,10 +176,22 @@ export const translations = {
       loading: "Loading...",
       error: "Error",
     },
+    favorites: {
+      title: "Favorites",
+      empty: "No favorites yet",
+      cta: "Browse products",
+    },
+    offers: {
+      title: "Offers",
+      empty: "No offers available",
+    },
   },
   ar: {
     nav: {
       home: "الرئيسية",
+      offers: "العروض",
+      favorites: "المفضلة",
+      account: "الحساب",
       products: "المنتجات",
       cart: "السلة",
       login: "تسجيل الدخول",
@@ -347,6 +362,15 @@ export const translations = {
     common: {
       loading: "جاري التحميل...",
       error: "خطأ",
+    },
+    favorites: {
+      title: "المفضلة",
+      empty: "لا توجد مفضلات بعد",
+      cta: "تصفح المنتجات",
+    },
+    offers: {
+      title: "العروض",
+      empty: "لا توجد عروض حالياً",
     },
   },
 };

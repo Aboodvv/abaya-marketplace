@@ -10,6 +10,7 @@ import { OrdersProvider } from "@/context/OrdersContext";
 import { ReviewsProvider } from "@/context/ReviewsContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import Navbar from "@/components/Navbar";
+import BottomNav from "@/components/BottomNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar />
-        {children}
+        <div className="pb-28">{children}</div>
+        <BottomNav />
       </body>
     </html>
   );

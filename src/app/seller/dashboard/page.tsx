@@ -53,8 +53,13 @@ export default function SellerDashboardPage() {
     inStock: true,
   });
   const [savingProduct, setSavingProduct] = useState(false);
+  const [productError, setProductError] = useState("");
+  const [withdrawError, setWithdrawError] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [savingWithdraw, setSavingWithdraw] = useState(false);
+  const approvalStatus =
+    sellerProfile?.approvalStatus ?? (sellerProfile?.approved ? "approved" : "pending");
+  const isApproved = approvalStatus === "approved";
 
   useEffect(() => {
     if (!sellerUser) return;
@@ -129,7 +134,20 @@ export default function SellerDashboardPage() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    setProductError("");
     if (!sellerUser || !sellerProfile) return;
+    if (!isApproved) {
+      setProductError(
+        approvalStatus === "rejected"
+          ? lang === "ar"
+            ? "تم رفض حسابك ولا يمكنك إضافة منتجات"
+            : "Your account was rejected and you cannot add products"
+          : lang === "ar"
+            ? "حسابك قيد المراجعة ولا يمكنك إضافة منتجات بعد"
+            : "Your account is under review and you cannot add products yet"
+      );
+      return;
+    }
     setSavingProduct(true);
     await addDoc(collection(db, "products"), {
       ...form,
@@ -162,7 +180,20 @@ export default function SellerDashboardPage() {
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
+    setWithdrawError("");
     if (!sellerUser) return;
+    if (!isApproved) {
+      setWithdrawError(
+        approvalStatus === "rejected"
+          ? lang === "ar"
+            ? "تم رفض حسابك ولا يمكنك طلب سحب"
+            : "Your account was rejected and you cannot request withdrawals"
+          : lang === "ar"
+            ? "حسابك قيد المراجعة ولا يمكنك طلب سحب بعد"
+            : "Your account is under review and you cannot request withdrawals yet"
+      );
+      return;
+    }
     const amount = Number(withdrawAmount);
     if (!amount || amount <= 0) return;
     setSavingWithdraw(true);
@@ -249,9 +280,37 @@ export default function SellerDashboardPage() {
           </div>
         </div>
 
+        {!isApproved && (
+          <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 mb-10">
+            <p className="font-semibold text-amber-800 mb-1">
+              {approvalStatus === "rejected"
+                ? lang === "ar"
+                  ? "تم رفض تسجيلك كبائع"
+                  : "Your seller registration was rejected"
+                : lang === "ar"
+                  ? "تسجيلك كبائع قيد المراجعة"
+                  : "Your seller registration is under review"}
+            </p>
+            <p className="text-sm text-amber-700">
+              {approvalStatus === "rejected"
+                ? lang === "ar"
+                  ? "يرجى التواصل مع الإدارة لمزيد من التفاصيل."
+                  : "Please contact admin for more details."
+                : lang === "ar"
+                  ? "سيتم تفعيل إضافة المنتجات بعد الموافقة."
+                  : "You can add products after approval."}
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
           <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.addProduct}</h2>
+            {productError && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+                {productError}
+              </div>
+            )}
             <form onSubmit={handleAddProduct} className="space-y-4">
               <input
                 name="name"
@@ -259,6 +318,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={lang === "ar" ? "الاسم (EN)" : "Name (EN)"}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                disabled={!isApproved}
                 required
               />
               <input
@@ -267,6 +327,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={lang === "ar" ? "الاسم (AR)" : "Name (AR)"}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                disabled={!isApproved}
                 required
               />
               <input
@@ -277,6 +338,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.price}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                disabled={!isApproved}
                 required
               />
               <input
@@ -285,6 +347,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.image}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                disabled={!isApproved}
                 required
               />
               <textarea
@@ -293,6 +356,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.descriptionEn}
                 className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
+                disabled={!isApproved}
                 rows={2}
               />
               <textarea
@@ -301,6 +365,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.descriptionAr}
                 className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
+                disabled={!isApproved}
                 rows={2}
               />
               <input
@@ -309,6 +374,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.categoryEn}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                disabled={!isApproved}
                 required
               />
               <input
@@ -317,6 +383,7 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.categoryAr}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                disabled={!isApproved}
                 required
               />
               <label className="flex items-center gap-2 text-gray-700">
@@ -325,14 +392,17 @@ export default function SellerDashboardPage() {
                   name="inStock"
                   checked={form.inStock}
                   onChange={handleProductChange}
+                  disabled={!isApproved}
                 />
                 {t.admin.inStock}
               </label>
               <button
                 type="submit"
-                disabled={savingProduct}
+                disabled={savingProduct || !isApproved}
                 className={`w-full py-3 rounded-full font-semibold transition ${
-                  savingProduct ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+                  savingProduct || !isApproved
+                    ? "bg-gray-300"
+                    : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
                 }`}
               >
                 {savingProduct ? t.common.loading : t.seller.addProduct}
@@ -351,6 +421,11 @@ export default function SellerDashboardPage() {
                 <span className="font-semibold">${availableBalance.toFixed(2)}</span>
               </p>
             </div>
+            {withdrawError && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+                {withdrawError}
+              </div>
+            )}
             <form onSubmit={handleWithdraw} className="space-y-4">
               <input
                 type="number"
@@ -359,13 +434,16 @@ export default function SellerDashboardPage() {
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder={lang === "ar" ? "مبلغ السحب" : "Withdraw amount"}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+                disabled={!isApproved}
                 required
               />
               <button
                 type="submit"
-                disabled={savingWithdraw}
+                disabled={savingWithdraw || !isApproved}
                 className={`w-full py-3 rounded-full font-semibold transition ${
-                  savingWithdraw ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+                  savingWithdraw || !isApproved
+                    ? "bg-gray-300"
+                    : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
                 }`}
               >
                 {savingWithdraw ? t.common.loading : t.seller.withdraw}

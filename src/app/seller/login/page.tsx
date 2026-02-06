@@ -14,11 +14,17 @@ export default function SellerLoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const usernamePattern = /^[a-z0-9._-]+$/i;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    if (!usernamePattern.test(username.trim())) {
+      setError(lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username");
+      setLoading(false);
+      return;
+    }
     try {
       await loginSeller(username, password);
       router.push("/seller/dashboard");

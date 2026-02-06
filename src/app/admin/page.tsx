@@ -42,6 +42,19 @@ interface SellerInfo {
   storeName: string;
 }
 
+interface SellerReview {
+  id: string;
+  name: string;
+  phone: string;
+  storeName: string;
+  storeCategory: string;
+  documentUrl: string;
+  username: string;
+  createdAt: string;
+  approvalStatus?: "pending" | "approved" | "rejected";
+  approvedAt?: string | null;
+}
+
 const emptyProduct = {
   name: "",
   nameAr: "",
@@ -62,8 +75,16 @@ export default function AdminPage() {
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
   const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
   const [sellerLookup, setSellerLookup] = useState<Record<string, SellerInfo>>({});
+  const [sellers, setSellers] = useState<SellerReview[]>([]);
+  const [loadingSellers, setLoadingSellers] = useState(true);
+  const [updatingSeller, setUpdatingSeller] = useState<string | null>(null);
+  const [sellerFilter, setSellerFilter] = useState("all");
+  const [sellerSearch, setSellerSearch] = useState("");
   const [withdrawalFilter, setWithdrawalFilter] = useState("all");
   const [withdrawalSearch, setWithdrawalSearch] = useState("");
+  const [withdrawalFrom, setWithdrawalFrom] = useState("");
+  const [withdrawalTo, setWithdrawalTo] = useState("");
+  const [withdrawalSort, setWithdrawalSort] = useState("newest");
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -85,6 +106,21 @@ export default function AdminPage() {
   useEffect(() => {
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const loadSellers = async () => {
+      setLoadingSellers(true);
+      const snapshot = await getDocs(collection(db, "sellers"));
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<SellerReview, "id">),
+      }));
+      setSellers(list as SellerReview[]);
+      setLoadingSellers(false);
+    };
+
+    loadSellers();
   }, []);
 
   useEffect(() => {
@@ -214,6 +250,25 @@ export default function AdminPage() {
     setUpdatingWithdrawals(null);
   };
 
+  const updateSellerStatus = async (
+    sellerId: string,
+    status: "pending" | "approved" | "rejected"
+  ) => {
+    setUpdatingSeller(sellerId);
+    await updateDoc(doc(db, "sellers", sellerId), {
+      approvalStatus: status,
+      approved: status === "approved",
+      approvedAt: status === "approved" ? new Date().toISOString() : null,
+    });
+    const snapshot = await getDocs(collection(db, "sellers"));
+    const list = snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...(docSnap.data() as Omit<SellerReview, "id">),
+    }));
+    setSellers(list as SellerReview[]);
+    setUpdatingSeller(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f4ef] py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -245,6 +300,128 @@ export default function AdminPage() {
               {lang === "ar" ? "فتح لوحة البنرات" : "Open banner panel"}
             </Link>
           </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                {lang === "ar" ? "مراجعة البائعين" : "Seller Approvals"}
+              </h2>
+              <p className="text-gray-600 text-sm mt-2">
+                {lang === "ar"
+                  ? "لا يمكن للبائع إضافة منتجات قبل الموافقة."
+                  : "Sellers cannot add products before approval."}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm text-gray-600">
+                {lang === "ar" ? "الحالة" : "Status"}
+              </span>
+              <select
+                value={sellerFilter}
+                onChange={(event) => setSellerFilter(event.target.value)}
+                className="border border-[#efe7da] rounded-full px-4 py-2"
+              >
+                <option value="all">{lang === "ar" ? "الكل" : "All"}</option>
+                <option value="pending">{lang === "ar" ? "قيد المراجعة" : "Pending"}</option>
+                <option value="approved">{lang === "ar" ? "مقبول" : "Approved"}</option>
+                <option value="rejected">{lang === "ar" ? "مرفوض" : "Rejected"}</option>
+              </select>
+              <input
+                value={sellerSearch}
+                onChange={(event) => setSellerSearch(event.target.value)}
+                placeholder={lang === "ar" ? "بحث بالمتجر أو الجوال" : "Search store or phone"}
+                className="border border-[#efe7da] rounded-full px-4 py-2"
+              />
+            </div>
+          </div>
+
+          {loadingSellers ? (
+            <p className="text-gray-600">{t.common.loading}</p>
+          ) : sellers
+              .filter((seller) =>
+                sellerFilter === "all"
+                  ? true
+                  : (seller.approvalStatus || "pending") === sellerFilter
+              )
+              .filter((seller) => {
+                const query = sellerSearch.trim().toLowerCase();
+                if (!query) return true;
+                const storeName = seller.storeName?.toLowerCase() || "";
+                const phone = seller.phone?.toLowerCase() || "";
+                return storeName.includes(query) || phone.includes(query);
+              }).length === 0 ? (
+            <p className="text-gray-600">
+              {lang === "ar" ? "لا يوجد بائعون" : "No sellers found"}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {sellers
+                .filter((seller) =>
+                  sellerFilter === "all"
+                    ? true
+                    : (seller.approvalStatus || "pending") === sellerFilter
+                )
+                .filter((seller) => {
+                  const query = sellerSearch.trim().toLowerCase();
+                  if (!query) return true;
+                  const storeName = seller.storeName?.toLowerCase() || "";
+                  const phone = seller.phone?.toLowerCase() || "";
+                  return storeName.includes(query) || phone.includes(query);
+                })
+                .map((seller) => (
+                  <div
+                    key={seller.id}
+                    className="border border-[#efe7da] rounded-3xl p-4 flex flex-wrap items-center justify-between gap-4"
+                  >
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        {lang === "ar" ? "المتجر" : "Store"}
+                      </p>
+                      <p className="font-semibold text-gray-900">{seller.storeName}</p>
+                      <p className="text-sm text-gray-600">{seller.name}</p>
+                      <p className="text-sm text-gray-600">{seller.phone}</p>
+                      <p className="text-sm text-gray-600">{seller.storeCategory}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        {lang === "ar" ? "الحالة" : "Status"}
+                      </p>
+                      <p className="font-semibold text-gray-900">
+                        {seller.approvalStatus || "pending"}
+                      </p>
+                      {seller.documentUrl && (
+                        <a
+                          href={seller.documentUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm text-[#c7a86a] font-semibold hover:underline"
+                        >
+                          {lang === "ar" ? "عرض الوثيقة" : "View document"}
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => updateSellerStatus(seller.id, "approved")}
+                        disabled={updatingSeller === seller.id}
+                        className="px-4 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659]"
+                      >
+                        {lang === "ar" ? "موافقة" : "Approve"}
+                      </button>
+                      <button
+                        onClick={() => updateSellerStatus(seller.id, "rejected")}
+                        disabled={updatingSeller === seller.id}
+                        className="px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
+                      >
+                        {lang === "ar" ? "رفض" : "Reject"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
@@ -366,6 +543,44 @@ export default function AdminPage() {
               placeholder={lang === "ar" ? "بحث بالمتجر أو الجوال" : "Search store or phone"}
               className="border border-[#efe7da] rounded-full px-4 py-2"
             />
+            <select
+              value={withdrawalSort}
+              onChange={(event) => setWithdrawalSort(event.target.value)}
+              className="border border-[#efe7da] rounded-full px-4 py-2"
+            >
+              <option value="newest">{lang === "ar" ? "الأحدث" : "Newest"}</option>
+              <option value="oldest">{lang === "ar" ? "الأقدم" : "Oldest"}</option>
+            </select>
+            <span className="text-sm text-gray-600">
+              {lang === "ar" ? "من" : "From"}
+            </span>
+            <input
+              type="date"
+              value={withdrawalFrom}
+              onChange={(event) => setWithdrawalFrom(event.target.value)}
+              className="border border-[#efe7da] rounded-full px-4 py-2"
+            />
+            <span className="text-sm text-gray-600">
+              {lang === "ar" ? "إلى" : "To"}
+            </span>
+            <input
+              type="date"
+              value={withdrawalTo}
+              onChange={(event) => setWithdrawalTo(event.target.value)}
+              className="border border-[#efe7da] rounded-full px-4 py-2"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setWithdrawalFilter("all");
+                setWithdrawalSearch("");
+                setWithdrawalFrom("");
+                setWithdrawalTo("");
+              }}
+              className="border border-[#efe7da] rounded-full px-4 py-2 text-sm"
+            >
+              {lang === "ar" ? "مسح الفلاتر" : "Clear filters"}
+            </button>
           </div>
           {loadingWithdrawals ? (
             <p className="text-gray-600">{t.common.loading}</p>
@@ -380,7 +595,26 @@ export default function AdminPage() {
                 const storeName = seller?.storeName?.toLowerCase() || "";
                 const phone = seller?.phone?.toLowerCase() || "";
                 return storeName.includes(query) || phone.includes(query);
-              }).length === 0 ? (
+              })
+              .filter((request) => {
+                if (!withdrawalFrom && !withdrawalTo) return true;
+                const created = new Date(request.createdAt).setHours(0, 0, 0, 0);
+                const from = withdrawalFrom
+                  ? new Date(withdrawalFrom).setHours(0, 0, 0, 0)
+                  : null;
+                const to = withdrawalTo
+                  ? new Date(withdrawalTo).setHours(23, 59, 59, 999)
+                  : null;
+                if (from !== null && created < from) return false;
+                if (to !== null && created > to) return false;
+                return true;
+              })
+              .sort(
+                (a, b) =>
+                  withdrawalSort === "newest"
+                    ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                    : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+              ).length === 0 ? (
             <p className="text-gray-600">
               {lang === "ar" ? "لا توجد طلبات سحب" : "No withdrawal requests"}
             </p>
@@ -398,6 +632,25 @@ export default function AdminPage() {
                   const phone = seller?.phone?.toLowerCase() || "";
                   return storeName.includes(query) || phone.includes(query);
                 })
+                .filter((request) => {
+                  if (!withdrawalFrom && !withdrawalTo) return true;
+                  const created = new Date(request.createdAt).setHours(0, 0, 0, 0);
+                  const from = withdrawalFrom
+                    ? new Date(withdrawalFrom).setHours(0, 0, 0, 0)
+                    : null;
+                  const to = withdrawalTo
+                    ? new Date(withdrawalTo).setHours(23, 59, 59, 999)
+                    : null;
+                  if (from !== null && created < from) return false;
+                  if (to !== null && created > to) return false;
+                  return true;
+                })
+                .sort(
+                  (a, b) =>
+                    withdrawalSort === "newest"
+                      ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                      : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                )
                 .map((request) => (
                 <div
                   key={request.id}
