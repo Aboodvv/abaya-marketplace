@@ -7,6 +7,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   updateDoc,
 } from "firebase/firestore";
@@ -35,6 +36,12 @@ interface WithdrawalRequest {
   createdAt: string;
 }
 
+interface SellerInfo {
+  name: string;
+  phone: string;
+  storeName: string;
+}
+
 const emptyProduct = {
   name: "",
   nameAr: "",
@@ -54,6 +61,7 @@ export default function AdminPage() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
   const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
+  const [sellerLookup, setSellerLookup] = useState<Record<string, SellerInfo>>({});
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -86,6 +94,22 @@ export default function AdminPage() {
         ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
       }));
       setWithdrawals(list);
+      const sellerIds = Array.from(new Set(list.map((item) => item.sellerId)));
+      if (sellerIds.length > 0) {
+        const entries = await Promise.all(
+          sellerIds.map(async (sellerId) => {
+            const sellerSnap = await getDoc(doc(db, "sellers", sellerId));
+            if (!sellerSnap.exists()) return [sellerId, undefined] as const;
+            const data = sellerSnap.data() as SellerInfo;
+            return [sellerId, data] as const;
+          })
+        );
+        const map: Record<string, SellerInfo> = {};
+        entries.forEach(([sellerId, info]) => {
+          if (info) map[sellerId] = info;
+        });
+        setSellerLookup(map);
+      }
       setLoadingWithdrawals(false);
     };
 
@@ -169,6 +193,22 @@ export default function AdminPage() {
       ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
     }));
     setWithdrawals(list);
+    const sellerIds = Array.from(new Set(list.map((item) => item.sellerId)));
+    if (sellerIds.length > 0) {
+      const entries = await Promise.all(
+        sellerIds.map(async (sellerId) => {
+          const sellerSnap = await getDoc(doc(db, "sellers", sellerId));
+          if (!sellerSnap.exists()) return [sellerId, undefined] as const;
+          const data = sellerSnap.data() as SellerInfo;
+          return [sellerId, data] as const;
+        })
+      );
+      const map: Record<string, SellerInfo> = {};
+      entries.forEach(([sellerId, info]) => {
+        if (info) map[sellerId] = info;
+      });
+      setSellerLookup(map);
+    }
     setUpdatingWithdrawals(null);
   };
 
@@ -319,7 +359,15 @@ export default function AdminPage() {
                 >
                   <div>
                     <p className="text-sm text-gray-500">{lang === "ar" ? "البائع" : "Seller"}</p>
-                    <p className="font-semibold text-gray-900">{request.sellerId}</p>
+                    <p className="font-semibold text-gray-900">
+                      {sellerLookup[request.sellerId]?.storeName || request.sellerId}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {sellerLookup[request.sellerId]?.name || "-"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {sellerLookup[request.sellerId]?.phone || "-"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">{lang === "ar" ? "المبلغ" : "Amount"}</p>
