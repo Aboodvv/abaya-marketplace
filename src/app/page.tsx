@@ -14,6 +14,12 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>(localProducts);
   const megaDealHours = 24; // عدّل الرقم لتغيير مدة المؤقت
   const [timeLeftMs, setTimeLeftMs] = useState(megaDealHours * 60 * 60 * 1000);
+  const adImages = [
+    "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=900&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=900&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=900&auto=format&fit=crop",
+  ];
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -195,23 +201,33 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7 bg-[#0b0b0b] text-white rounded-3xl p-8 border border-[#1e1e1e] relative overflow-hidden">
+          <div
+            className="lg:col-span-7 text-white rounded-3xl p-8 border border-[#1e1e1e] relative overflow-hidden"
+            style={{
+              backgroundImage: `url(${adImages[0]})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <div className="absolute inset-0 bg-black/60" />
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top,_#c7a86a,_transparent_65%)]" />
-            <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-3">
-              {lang === "ar" ? "بنر إعلاني" : "Sponsored"}
-            </p>
-            <h3 className="text-3xl font-bold mb-3">{t.home.ads.items[0].title}</h3>
-            <p className="text-white/70 mb-6">{t.home.ads.items[0].subtitle}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white/60">{t.home.ads.items[0].size}</span>
-                <Link
-                  href="https://iwtsp.com/966550514533"
-                  className="px-4 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition text-sm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t.home.ads.cta}
-                </Link>
+            <div className="relative">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#c7a86a] mb-3">
+                {lang === "ar" ? "بنر إعلاني" : "Sponsored"}
+              </p>
+              <h3 className="text-3xl font-bold mb-3">{t.home.ads.items[0].title}</h3>
+              <p className="text-white/70 mb-6">{t.home.ads.items[0].subtitle}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/60">{t.home.ads.items[0].size}</span>
+                  <Link
+                    href="https://iwtsp.com/966550514533"
+                    className="px-4 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition text-sm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t.home.ads.cta}
+                  </Link>
+              </div>
             </div>
           </div>
 
@@ -219,8 +235,15 @@ export default function Home() {
             {t.home.ads.items.slice(1, 3).map((item, index) => (
               <div
                 key={`${item.title}-${index}`}
-                className="rounded-3xl border border-[#efe7da] bg-white p-6 shadow-lg"
+                className="rounded-3xl border border-[#efe7da] bg-white p-6 shadow-lg relative overflow-hidden"
+                style={{
+                  backgroundImage: `url(${adImages[index + 1]})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               >
+                <div className="absolute inset-0 bg-white/85" />
+                <div className="relative">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
                   {lang === "ar" ? "مساحة" : "Slot"}
                 </p>
@@ -237,6 +260,7 @@ export default function Home() {
                     {t.home.ads.cta}
                   </Link>
                 </div>
+                </div>
               </div>
             ))}
           </div>
@@ -251,24 +275,32 @@ export default function Home() {
             {[...Array(6)].map((_, index) => (
               <div
                 key={`ad-strip-${index}`}
-                className="min-w-[220px] rounded-2xl border border-[#efe7da] bg-[#f7f4ef] p-4"
+                className="min-w-[220px] rounded-2xl border border-[#efe7da] bg-[#f7f4ef] p-4 relative overflow-hidden"
+                style={{
+                  backgroundImage: `url(${adImages[3]})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               >
-                <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
-                  {lang === "ar" ? "إعلان" : "Ad"}
-                </p>
-                <p className="text-gray-700 text-sm mb-3">
-                  {lang === "ar"
-                    ? "احجز هذه المساحة لعرض حملتك."
-                    : "Reserve this slot for your campaign."}
-                </p>
-                <Link
-                  href="https://iwtsp.com/966550514533"
-                  className="text-sm font-semibold text-[#c7a86a] hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t.home.ads.cta}
-                </Link>
+                <div className="absolute inset-0 bg-white/80" />
+                <div className="relative">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                    {lang === "ar" ? "إعلان" : "Ad"}
+                  </p>
+                  <p className="text-gray-700 text-sm mb-3">
+                    {lang === "ar"
+                      ? "احجز هذه المساحة لعرض حملتك."
+                      : "Reserve this slot for your campaign."}
+                  </p>
+                  <Link
+                    href="https://iwtsp.com/966550514533"
+                    className="text-sm font-semibold text-[#c7a86a] hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t.home.ads.cta}
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
