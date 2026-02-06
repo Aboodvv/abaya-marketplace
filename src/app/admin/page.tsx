@@ -63,6 +63,7 @@ export default function AdminPage() {
   const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
   const [sellerLookup, setSellerLookup] = useState<Record<string, SellerInfo>>({});
   const [withdrawalFilter, setWithdrawalFilter] = useState("all");
+  const [withdrawalSearch, setWithdrawalSearch] = useState("");
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -359,12 +360,27 @@ export default function AdminPage() {
               <option value="approved">{lang === "ar" ? "مقبول" : "Approved"}</option>
               <option value="rejected">{lang === "ar" ? "مرفوض" : "Rejected"}</option>
             </select>
+            <input
+              value={withdrawalSearch}
+              onChange={(event) => setWithdrawalSearch(event.target.value)}
+              placeholder={lang === "ar" ? "بحث بالمتجر أو الجوال" : "Search store or phone"}
+              className="border border-[#efe7da] rounded-full px-4 py-2"
+            />
           </div>
           {loadingWithdrawals ? (
             <p className="text-gray-600">{t.common.loading}</p>
-          ) : withdrawals.filter((request) =>
-              withdrawalFilter === "all" ? true : request.status === withdrawalFilter
-            ).length === 0 ? (
+          ) : withdrawals
+              .filter((request) =>
+                withdrawalFilter === "all" ? true : request.status === withdrawalFilter
+              )
+              .filter((request) => {
+                const query = withdrawalSearch.trim().toLowerCase();
+                if (!query) return true;
+                const seller = sellerLookup[request.sellerId];
+                const storeName = seller?.storeName?.toLowerCase() || "";
+                const phone = seller?.phone?.toLowerCase() || "";
+                return storeName.includes(query) || phone.includes(query);
+              }).length === 0 ? (
             <p className="text-gray-600">
               {lang === "ar" ? "لا توجد طلبات سحب" : "No withdrawal requests"}
             </p>
@@ -374,6 +390,14 @@ export default function AdminPage() {
                 .filter((request) =>
                   withdrawalFilter === "all" ? true : request.status === withdrawalFilter
                 )
+                .filter((request) => {
+                  const query = withdrawalSearch.trim().toLowerCase();
+                  if (!query) return true;
+                  const seller = sellerLookup[request.sellerId];
+                  const storeName = seller?.storeName?.toLowerCase() || "";
+                  const phone = seller?.phone?.toLowerCase() || "";
+                  return storeName.includes(query) || phone.includes(query);
+                })
                 .map((request) => (
                 <div
                   key={request.id}
