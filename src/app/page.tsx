@@ -202,9 +202,12 @@ export default function Home() {
             <p className="text-white/70 mb-6">{t.home.ads.items[0].subtitle}</p>
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">{t.home.ads.items[0].size}</span>
-              <button className="px-4 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition text-sm">
-                {t.home.ads.cta}
-              </button>
+                <Link
+                  href="https://iwtsp.com/966550514533"
+                  className="px-4 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition text-sm"
+                >
+                  {t.home.ads.cta}
+                </Link>
             </div>
           </div>
 
@@ -221,7 +224,12 @@ export default function Home() {
                 <p className="text-gray-600 mb-4">{item.subtitle}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">{item.size}</span>
-                  <span className="text-sm font-semibold text-[#c7a86a]">{t.home.ads.cta}</span>
+                  <Link
+                    href="https://iwtsp.com/966550514533"
+                    className="text-sm font-semibold text-[#c7a86a] hover:underline"
+                  >
+                    {t.home.ads.cta}
+                  </Link>
                 </div>
               </div>
             ))}
@@ -242,11 +250,17 @@ export default function Home() {
                 <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
                   {lang === "ar" ? "إعلان" : "Ad"}
                 </p>
-                <p className="text-gray-700 text-sm">
+                <p className="text-gray-700 text-sm mb-3">
                   {lang === "ar"
                     ? "احجز هذه المساحة لعرض حملتك."
                     : "Reserve this slot for your campaign."}
                 </p>
+                <Link
+                  href="https://iwtsp.com/966550514533"
+                  className="text-sm font-semibold text-[#c7a86a] hover:underline"
+                >
+                  {t.home.ads.cta}
+                </Link>
               </div>
             ))}
           </div>
