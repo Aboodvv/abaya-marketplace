@@ -9,6 +9,7 @@ import { db } from "@/lib/firebase";
 import { products as localProducts } from "@/data/products";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart, Product } from "@/context/CartContext";
+import ProductCard from "@/components/ProductCard";
 
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -68,6 +69,11 @@ export default function ProductDetailsPage() {
   const name = lang === "ar" ? product.nameAr : product.name;
   const description = lang === "ar" ? product.descriptionAr : product.description;
   const category = lang === "ar" ? product.categoryAr : product.category;
+  const relatedProducts = localProducts
+    .filter((item) => item.id !== product.id)
+    .filter((item) => item.category === product.category)
+    .slice(0, 3);
+  const fallbackProducts = localProducts.filter((item) => item.id !== product.id).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-[#f7f4ef]">
@@ -80,19 +86,37 @@ export default function ProductDetailsPage() {
         </Link>
 
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div className="relative h-[480px] w-full rounded-3xl overflow-hidden shadow-xl border border-[#efe7da] bg-white">
-            <Image
-              src={product.image}
-              alt={name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            {!product.inStock && (
-              <div className="absolute top-5 right-5 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                {t.products.outOfStock}
-              </div>
-            )}
+          <div>
+            <div className="relative h-[480px] w-full rounded-3xl overflow-hidden shadow-xl border border-[#efe7da] bg-white">
+              <Image
+                src={product.image}
+                alt={name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              {!product.inStock && (
+                <div className="absolute top-5 right-5 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  {t.products.outOfStock}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {[0, 1, 2].map((index) => (
+                <div
+                  key={`${product.id}-thumb-${index}`}
+                  className="relative h-28 w-full rounded-2xl overflow-hidden border border-[#efe7da] bg-white"
+                >
+                  <Image
+                    src={product.image}
+                    alt={name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 33vw, 25vw"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da]">
@@ -120,6 +144,68 @@ export default function ProductDetailsPage() {
             >
               {t.products.addToCart}
             </button>
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-[#efe7da] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                  {lang === "ar" ? "الخامة" : "Fabric"}
+                </p>
+                <p className="text-gray-700">
+                  {lang === "ar"
+                    ? "قماش فاخر مع لمسات ناعمة وانسيابية."
+                    : "Premium fabric with a soft, flowing finish."}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[#efe7da] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                  {lang === "ar" ? "العناية" : "Care"}
+                </p>
+                <p className="text-gray-700">
+                  {lang === "ar"
+                    ? "تنظيف جاف للحفاظ على الجودة والشكل."
+                    : "Dry clean recommended to preserve quality."}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[#efe7da] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                  {lang === "ar" ? "الشحن" : "Shipping"}
+                </p>
+                <p className="text-gray-700">
+                  {lang === "ar"
+                    ? "توصيل سريع خلال 2-4 أيام عمل."
+                    : "Fast delivery within 2-4 business days."}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[#efe7da] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#c7a86a] mb-2">
+                  {lang === "ar" ? "الإرجاع" : "Returns"}
+                </p>
+                <p className="text-gray-700">
+                  {lang === "ar"
+                    ? "إرجاع خلال 7 أيام بحالتها الأصلية."
+                    : "Returns accepted within 7 days."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">
+              {lang === "ar" ? "منتجات مشابهة" : "You may also like"}
+            </h2>
+            <Link
+              href="/products"
+              className="text-[#c7a86a] font-semibold hover:underline"
+            >
+              {t.products.title}
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {(relatedProducts.length > 0 ? relatedProducts : fallbackProducts).map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
           </div>
         </div>
       </div>
