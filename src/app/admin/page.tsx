@@ -375,6 +375,25 @@ export default function AdminPage() {
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                {t.adminMarketing.sectionTitle}
+              </h2>
+              <p className="text-gray-600 text-sm mt-2">
+                {t.adminMarketing.sectionSubtitle}
+              </p>
+            </div>
+            <Link
+              href="/admin/marketing"
+              className="inline-flex px-5 py-2 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+            >
+              {t.adminMarketing.openPanel}
+            </Link>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900">

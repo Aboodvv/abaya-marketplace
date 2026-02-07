@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { products as localProducts } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
+import MarketingTool from "@/components/MarketingTool";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product } from "@/context/CartContext";
@@ -184,6 +185,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <MarketingTool />
 
       {/* Banners */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 pb-12">
