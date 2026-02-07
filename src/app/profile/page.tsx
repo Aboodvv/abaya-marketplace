@@ -41,12 +41,13 @@ export default function ProfilePage() {
   }, [userProfile]);
 
   const orderStates = useMemo(
-    () => [
-      { key: "pending", icon: ShoppingBag },
-      { key: "processing", icon: PackageCheck },
-      { key: "shipped", icon: Truck },
-      { key: "delivered", icon: PackageCheck },
-    ],
+    () =>
+      [
+        { key: "pending", icon: ShoppingBag },
+        { key: "processing", icon: PackageCheck },
+        { key: "shipped", icon: Truck },
+        { key: "delivered", icon: PackageCheck },
+      ] as const,
     []
   );
 
