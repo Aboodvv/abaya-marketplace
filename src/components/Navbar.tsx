@@ -41,15 +41,17 @@ export default function Navbar() {
   }, [user, loadNotifications]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0b0b0b]/90 text-white backdrop-blur">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#6d1f4c] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div
             className={`flex items-center gap-8 ${dir === "rtl" ? "flex-row-reverse" : ""}`}
           >
-            <Link href="/" className="text-2xl font-bold tracking-wide">
-              {lang === "ar" ? "برزن" : "Barzn"}
-              <span className="ml-2 text-sm text-[#c7a86a]">Abaya</span>
+            <Link href="/" className="brand-badge" aria-label="Barzn Abaya">
+              <span className="brand-outline">
+                {lang === "ar" ? "برزن" : "Barzn"}
+              </span>
+              <span className="brand-sub">Abaya</span>
             </Link>
             <div
               className={`hidden md:flex gap-6 text-sm font-semibold ${dir === "rtl" ? "flex-row-reverse" : ""}`}
@@ -141,7 +143,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-      <div className="border-t border-white/10 bg-black/50">
+      <div className="border-t border-white/10 bg-[#5b183d]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className={`flex flex-wrap items-center justify-center gap-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 ${
