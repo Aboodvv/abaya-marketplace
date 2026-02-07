@@ -25,33 +25,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 14px;
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.brand-outline {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: transparent;
-  -webkit-text-stroke: 1.2px #ffffff;
-  text-stroke: 1.2px #ffffff;
-}
-
-.brand-sub {
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #ffe8c5;
-}
-
 .marquee {
   overflow: hidden;
   position: relative;
