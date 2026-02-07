@@ -64,6 +64,16 @@ export default function Home() {
   const [adItems, setAdItems] = useState(defaultAdItems);
   const [bookingLink, setBookingLink] = useState(defaultBookingLink);
 
+  const runWhenIdle = (task: () => void) => {
+    if (typeof window === "undefined") return () => undefined;
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(() => task(), { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const timeoutId = window.setTimeout(task, 800);
+    return () => window.clearTimeout(timeoutId);
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       const snapshot = await getDocs(collection(db, "products"));
@@ -76,7 +86,7 @@ export default function Home() {
       }
     };
 
-    fetchProducts();
+    return runWhenIdle(fetchProducts);
   }, []);
 
   useEffect(() => {
@@ -111,7 +121,7 @@ export default function Home() {
       }
     };
 
-    fetchAdImages();
+    return runWhenIdle(fetchAdImages);
   }, []);
 
   useEffect(() => {

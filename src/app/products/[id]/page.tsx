@@ -64,6 +64,11 @@ export default function ProductDetailsPage() {
     return total / reviews.length;
   }, [reviews]);
 
+  const fallbackName =
+    userProfile?.name ||
+    user?.displayName ||
+    (user?.email ? user.email.split("@")[0] : lang === "ar" ? "مستخدم" : "User");
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
@@ -101,12 +106,12 @@ export default function ProductDetailsPage() {
 
   const handleSubmitReview = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!user || !userProfile) return;
+    if (!user) return;
     setSubmitting(true);
     await addReview({
       productId: product.id,
       userId: user.uid,
-      userName: userProfile.name,
+      userName: fallbackName,
       rating,
       comment,
     });

@@ -8,7 +8,7 @@ import { useNotifications } from "@/context/NotificationsContext";
 
 export default function NotificationsPage() {
   const { lang, t } = useLanguage();
-  const { user, userProfile } = useAuth();
+  const { user } = useAuth();
   const { notifications, loadNotifications, markAsRead } = useNotifications();
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export default function NotificationsPage() {
     }
   }, [user, loadNotifications]);
 
-  if (!user || !userProfile) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

@@ -9,7 +9,7 @@ import { useOrders, Order } from "@/context/OrdersContext";
 
 export default function OrdersPage() {
   const { lang, t } = useLanguage();
-  const { user, userProfile } = useAuth();
+  const { user } = useAuth();
   const { getOrdersByUser } = useOrders();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ export default function OrdersPage() {
     fetchOrders();
   }, [getOrdersByUser, user]);
 
-  if (!user || !userProfile) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
         <div className="text-center bg-white rounded-3xl shadow-xl p-10 border border-[#efe7da]">

@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -17,28 +17,46 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { userProfile, updateProfile } = useAuth();
+  const { user, userProfile, updateProfile, loading: authLoading } = useAuth();
   const { lang, t } = useLanguage();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: userProfile?.name || "",
-    phone: userProfile?.phone || "",
-    address: userProfile?.address || "",
-    city: userProfile?.city || "",
+    name: "",
+    phone: "",
+    address: "",
+    city: "",
   });
 
+  const fallbackName =
+    userProfile?.name ||
+    user?.displayName ||
+    (user?.email ? user.email.split("@")[0] : "");
+
+  const displayEmail = userProfile?.email || user?.email || "-";
+
+  useEffect(() => {
+    if (!userProfile) return;
+    setFormData({
+      name: userProfile.name || "",
+      phone: userProfile.phone || "",
+      address: userProfile.address || "",
+      city: userProfile.city || "",
+    });
+  }, [userProfile]);
+
   const initials = useMemo(() => {
-    if (!userProfile?.name) return "";
-    return userProfile.name
+    const name = userProfile?.name || fallbackName;
+    if (!name) return "";
+    return name
       .split(" ")
       .filter(Boolean)
       .slice(0, 2)
       .map((part) => part[0])
       .join("")
       .toUpperCase();
-  }, [userProfile]);
+  }, [fallbackName, userProfile]);
 
   const orderStates = useMemo(
     () =>
@@ -64,7 +82,15 @@ export default function ProfilePage() {
     []
   );
 
-  if (!userProfile) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">{t.common.loading}</p>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -89,6 +115,7 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userProfile) return;
     setLoading(true);
     try {
       await updateProfile(formData);
@@ -112,7 +139,7 @@ export default function ProfilePage() {
                 {t.profile.greeting}
               </p>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                {userProfile.name}
+                {userProfile?.name || fallbackName}
               </h1>
               <p className="text-gray-600 mt-2">{t.profile.subtitle}</p>
             </div>
@@ -122,6 +149,7 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={() => setEditing(true)}
+                disabled={!userProfile}
                 className="inline-flex items-center gap-2 rounded-full border border-[#c7a86a] px-5 py-2 text-sm font-semibold text-[#7a5a1f] hover:bg-[#c7a86a] hover:text-black transition"
               >
                 {t.profile.editProfile}
@@ -197,23 +225,31 @@ export default function ProfilePage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="text-gray-500 text-sm">{t.profile.fields.email}</label>
-                <p className="text-gray-900 font-semibold">{userProfile.email}</p>
+                <p className="text-gray-900 font-semibold">{displayEmail}</p>
               </div>
               <div>
                 <label className="text-gray-500 text-sm">{t.profile.fields.name}</label>
-                <p className="text-gray-900 font-semibold">{userProfile.name}</p>
+                <p className="text-gray-900 font-semibold">
+                  {userProfile?.name || fallbackName || "-"}
+                </p>
               </div>
               <div>
                 <label className="text-gray-500 text-sm">{t.profile.fields.phone}</label>
-                <p className="text-gray-900 font-semibold">{userProfile.phone || "-"}</p>
+                <p className="text-gray-900 font-semibold">
+                  {userProfile?.phone || "-"}
+                </p>
               </div>
               <div>
                 <label className="text-gray-500 text-sm">{t.profile.fields.address}</label>
-                <p className="text-gray-900 font-semibold">{userProfile.address || "-"}</p>
+                <p className="text-gray-900 font-semibold">
+                  {userProfile?.address || "-"}
+                </p>
               </div>
               <div>
                 <label className="text-gray-500 text-sm">{t.profile.fields.city}</label>
-                <p className="text-gray-900 font-semibold">{userProfile.city || "-"}</p>
+                <p className="text-gray-900 font-semibold">
+                  {userProfile?.city || "-"}
+                </p>
               </div>
             </div>
           ) : (

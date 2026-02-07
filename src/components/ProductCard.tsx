@@ -41,14 +41,19 @@ export default function ProductCard({ product }: ProductCardProps) {
     return total / reviews.length;
   }, [reviews]);
 
+  const fallbackName =
+    userProfile?.name ||
+    user?.displayName ||
+    (user?.email ? user.email.split("@")[0] : lang === "ar" ? "مستخدم" : "User");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !userProfile) return;
+    if (!user) return;
     setSubmitting(true);
     await addReview({
       productId: product.id,
       userId: user.uid,
-      userName: userProfile.name,
+      userName: fallbackName,
       rating,
       comment,
     });

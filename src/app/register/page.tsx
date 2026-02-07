@@ -22,7 +22,6 @@ export default function RegisterPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const [pendingRedirect, setPendingRedirect] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -32,10 +31,8 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (pendingRedirect && user) {
-      router.replace("/");
-    }
-  }, [authLoading, pendingRedirect, router, user]);
+    if (user) router.replace("/");
+  }, [authLoading, router, user]);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -49,7 +46,6 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setToast(null);
-    setPendingRedirect(false);
 
     if (formData.password !== formData.confirmPassword) {
       showToast(
@@ -67,7 +63,7 @@ export default function RegisterPage() {
         formData.password,
         formData.name.trim()
       );
-      setPendingRedirect(true);
+      router.replace("/");
     } catch (err: any) {
       showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {

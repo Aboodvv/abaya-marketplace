@@ -18,7 +18,6 @@ export default function LoginPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const [pendingRedirect, setPendingRedirect] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -28,10 +27,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (pendingRedirect && user) {
-      router.replace("/");
-    }
-  }, [authLoading, pendingRedirect, router, user]);
+    if (user) router.replace("/");
+  }, [authLoading, router, user]);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -40,12 +37,11 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setToast(null);
-    setPendingRedirect(false);
     setLoading(true);
 
     try {
       await login(email.trim(), password);
-      setPendingRedirect(true);
+      router.replace("/");
     } catch (err: any) {
       showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {
@@ -134,7 +130,40 @@ export default function LoginPage() {
                 : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
             }`}
           >
-            {loading ? t.common.loading : t.login.submit}
+            {loading ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <span
+                  className="inline-flex h-4 w-4 items-center justify-center"
+                  aria-hidden="true"
+                >
+                  <svg
+                    className="h-4 w-4 animate-spin text-gray-700"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      d="M4 12a8 8 0 0 1 8-8"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
+                {t.common.loading}
+              </span>
+            ) : (
+              t.login.submit
+            )}
           </button>
         </form>
 
