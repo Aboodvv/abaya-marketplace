@@ -3,7 +3,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   User,
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
+  setPersistence,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
@@ -41,22 +43,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+    let unsubscribe: (() => void) | null = null;
+    let isMounted = true;
 
-      if (currentUser) {
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setUserProfile(docSnap.data() as UserProfile);
-        }
-      } else {
-        setUserProfile(null);
+    const ensureProfile = async (currentUser: User) => {
+      const docRef = doc(db, "users", currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data() as UserProfile;
       }
-      setLoading(false);
-    });
+      const fallbackName =
+        currentUser.displayName ||
+        (currentUser.email ? currentUser.email.split("@")[0] : "User");
+      const newProfile: UserProfile = {
+        uid: currentUser.uid,
+        email: currentUser.email || "",
+        name: fallbackName,
+        phone: "",
+        address: "",
+        city: "",
+        createdAt: new Date().toISOString(),
+      };
+      await setDoc(docRef, newProfile, { merge: true });
+      return newProfile;
+    };
 
-    return unsubscribe;
+    const initAuth = async () => {
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+      } catch (error) {
+        console.warn("Failed to set auth persistence:", error);
+      }
+
+      unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        if (!isMounted) return;
+        setUser(currentUser);
+
+        if (currentUser) {
+          const profile = await ensureProfile(currentUser);
+          if (isMounted) setUserProfile(profile);
+        } else {
+          setUserProfile(null);
+        }
+        if (isMounted) setLoading(false);
+      });
+    };
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const register = async (email: string, password: string, name: string) => {
