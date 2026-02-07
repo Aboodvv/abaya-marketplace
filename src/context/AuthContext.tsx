@@ -47,15 +47,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let isMounted = true;
 
     const ensureProfile = async (currentUser: User) => {
-      const docRef = doc(db, "users", currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        return docSnap.data() as UserProfile;
-      }
       const fallbackName =
         currentUser.displayName ||
         (currentUser.email ? currentUser.email.split("@")[0] : "User");
-      const newProfile: UserProfile = {
+      const fallbackProfile: UserProfile = {
         uid: currentUser.uid,
         email: currentUser.email || "",
         name: fallbackName,
@@ -64,8 +59,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         city: "",
         createdAt: new Date().toISOString(),
       };
-      await setDoc(docRef, newProfile, { merge: true });
-      return newProfile;
+
+      try {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          return docSnap.data() as UserProfile;
+        }
+        await setDoc(docRef, fallbackProfile, { merge: true });
+        return fallbackProfile;
+      } catch (error) {
+        console.warn("Failed to load user profile, using fallback:", error);
+        return fallbackProfile;
+      }
     };
 
     const initAuth = async () => {
