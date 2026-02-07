@@ -3,6 +3,7 @@ export const translations = {
     nav: {
       home: "Home",
       offers: "Offers",
+      dailyPick: "Today's Picks",
       favorites: "Favorites",
       account: "Account",
       products: "Products",
@@ -190,6 +191,9 @@ export const translations = {
       continueShopping: "Continue Shopping",
       remove: "Remove",
       quantity: "Quantity",
+      freeDeliveryTitle: "Free delivery progress",
+      freeDeliveryRemaining: "Add {count} more items to unlock free delivery",
+      freeDeliveryUnlocked: "Free delivery unlocked",
     },
     orders: {
       title: "My Orders",
@@ -261,11 +265,17 @@ export const translations = {
       title: "Offers",
       empty: "No offers available",
     },
+    dailyPick: {
+      title: "Today's Picks",
+      subtitle: "Handpicked styles for today",
+      empty: "No picks available today",
+    },
   },
   ar: {
     nav: {
       home: "الرئيسية",
       offers: "العروض",
+      dailyPick: "اختيار اليوم",
       favorites: "المفضلة",
       account: "الحساب",
       products: "المنتجات",
@@ -453,6 +463,9 @@ export const translations = {
       continueShopping: "متابعة التسوق",
       remove: "إزالة",
       quantity: "الكمية",
+      freeDeliveryTitle: "تقدم التوصيل المجاني",
+      freeDeliveryRemaining: "أضيفي {count} منتجات لإتمام التوصيل المجاني",
+      freeDeliveryUnlocked: "تم تفعيل التوصيل المجاني",
     },
     orders: {
       title: "طلباتي",
@@ -461,6 +474,11 @@ export const translations = {
       date: "التاريخ",
       status: "الحالة",
       pending: "قيد المعالجة",
+    },
+    dailyPick: {
+      title: "اختيار اليوم",
+      subtitle: "مختارات أنيقة خصيصا لهذا اليوم",
+      empty: "لا توجد اختيارات متاحة اليوم",
     },
     admin: {
       title: "لوحة الإدارة",

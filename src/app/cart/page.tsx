@@ -12,11 +12,14 @@ import { useState } from "react";
 
 export default function CartPage() {
   const { lang, t } = useLanguage();
-  const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { cart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
   const { createOrder } = useOrders();
   const { createNotification } = useNotifications();
   const { user, userProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const freeDeliveryTarget = 3;
+  const remainingForFreeDelivery = Math.max(0, freeDeliveryTarget - totalItems);
+  const progressPercent = Math.min(100, (totalItems / freeDeliveryTarget) * 100);
 
   const handleCheckout = async () => {
     setLoading(true);
@@ -102,6 +105,29 @@ export default function CartPage() {
             {lang === "ar"
               ? "راجعي العناصر قبل إتمام الدفع"
               : "Review your items before checkout"}
+          </p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <p className="text-sm font-semibold text-gray-900">
+              {t.cart.freeDeliveryTitle}
+            </p>
+            <span className="text-sm text-gray-600">{Math.round(progressPercent)}%</span>
+          </div>
+          <div className="h-3 rounded-full bg-[#f7f4ef] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#c7a86a] transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="mt-3 text-sm text-gray-600">
+            {remainingForFreeDelivery === 0
+              ? t.cart.freeDeliveryUnlocked
+              : t.cart.freeDeliveryRemaining.replace(
+                  "{count}",
+                  String(remainingForFreeDelivery)
+                )}
           </p>
         </div>
 
