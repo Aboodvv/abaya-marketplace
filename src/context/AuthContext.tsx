@@ -49,6 +49,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setUserProfile(docSnap.data() as UserProfile);
+        } else {
+          const fallbackName =
+            currentUser.displayName ||
+            currentUser.email?.split("@")[0] ||
+            "Customer";
+          const newProfile: UserProfile = {
+            uid: currentUser.uid,
+            email: currentUser.email || "",
+            name: fallbackName,
+            phone: "",
+            address: "",
+            city: "",
+            createdAt: new Date().toISOString(),
+          };
+          await setDoc(docRef, newProfile, { merge: true });
+          setUserProfile(newProfile);
         }
       } else {
         setUserProfile(null);
