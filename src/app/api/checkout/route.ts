@@ -25,11 +25,23 @@ export async function POST(req: NextRequest) {
       quantity: item.quantity,
     }));
 
+    const totalItems = items.reduce(
+      (sum: number, item: any) => sum + (item.quantity || 0),
+      0
+    );
+    const freeDeliveryEligible = totalItems >= 3;
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${req.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      metadata: {
+        free_delivery: freeDeliveryEligible ? "yes" : "no",
+        free_delivery_threshold: "3",
+      },
+      success_url: `${req.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}&free_delivery=${
+        freeDeliveryEligible ? "1" : "0"
+      }`,
       cancel_url: `${req.nextUrl.origin}/cart`,
     });
 

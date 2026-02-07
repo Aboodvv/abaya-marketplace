@@ -91,6 +91,16 @@ export default function OrdersPage() {
                       {t.orders.pending}
                     </span>
                   </div>
+                  {order.freeDeliveryEligible && (
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        {t.cart.freeDeliveryTitle}
+                      </p>
+                      <span className="inline-block px-3 py-1 rounded-full bg-[#f7f4ef] text-[#7a5a1f] text-sm font-semibold">
+                        {t.orders.freeDeliveryApplied}
+                      </span>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-gray-500">{t.cart.total}</p>
                     <p className="font-semibold text-gray-900">${order.total.toFixed(2)}</p>

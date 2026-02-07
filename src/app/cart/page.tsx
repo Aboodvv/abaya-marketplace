@@ -20,6 +20,7 @@ export default function CartPage() {
   const freeDeliveryTarget = 3;
   const remainingForFreeDelivery = Math.max(0, freeDeliveryTarget - totalItems);
   const progressPercent = Math.min(100, (totalItems / freeDeliveryTarget) * 100);
+  const freeDeliveryEligible = totalItems >= freeDeliveryTarget;
 
   const handleCheckout = async () => {
     setLoading(true);
@@ -36,6 +37,8 @@ export default function CartPage() {
           userId: user.uid,
           items: cart,
           total: totalPrice,
+          freeDeliveryEligible,
+          freeDeliveryThreshold: freeDeliveryTarget,
         });
 
         await createNotification({
@@ -187,6 +190,11 @@ export default function CartPage() {
             <span>{t.cart.total}:</span>
             <span className="text-gray-900">${totalPrice.toFixed(2)}</span>
           </div>
+          {freeDeliveryEligible && (
+            <div className="mb-4 rounded-2xl border border-[#efe7da] bg-[#f7f4ef] px-4 py-3 text-sm text-gray-700">
+              {t.cart.freeDeliveryCheckout}
+            </div>
+          )}
           <button
             onClick={handleCheckout}
             disabled={loading}

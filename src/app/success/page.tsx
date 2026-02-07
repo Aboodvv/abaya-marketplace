@@ -4,10 +4,13 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function SuccessPage() {
   const { t, lang } = useLanguage();
   const { clearCart } = useCart();
+  const searchParams = useSearchParams();
+  const freeDeliveryApplied = searchParams.get("free_delivery") === "1";
 
   useEffect(() => {
     clearCart();
@@ -44,6 +47,11 @@ export default function SuccessPage() {
             ? "شكراً لطلبك. سنرسل تفاصيل الطلب إلى بريدك الإلكتروني."
             : "Thank you for your order. We'll send order details to your email."}
         </p>
+        {freeDeliveryApplied && (
+          <div className="mb-8 rounded-2xl border border-[#efe7da] bg-[#f7f4ef] px-4 py-3 text-sm text-gray-700">
+            {t.success.freeDeliveryApplied}
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/"

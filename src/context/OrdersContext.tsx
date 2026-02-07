@@ -29,6 +29,8 @@ export interface Order {
   status: "pending" | "paid" | "cancelled";
   createdAt: string;
   stripeSessionId?: string;
+  freeDeliveryEligible?: boolean;
+  freeDeliveryThreshold?: number;
 }
 
 interface OrdersContextType {
@@ -37,6 +39,8 @@ interface OrdersContextType {
     items: CartItem[];
     total: number;
     stripeSessionId?: string;
+    freeDeliveryEligible?: boolean;
+    freeDeliveryThreshold?: number;
   }) => Promise<string>;
   getOrdersByUser: (userId: string) => Promise<Order[]>;
 }
@@ -49,6 +53,8 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
     items: CartItem[];
     total: number;
     stripeSessionId?: string;
+    freeDeliveryEligible?: boolean;
+    freeDeliveryThreshold?: number;
   }) => {
     const payload = {
       userId: params.userId,
@@ -64,6 +70,8 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
       status: "pending" as const,
       createdAt: new Date().toISOString(),
       stripeSessionId: params.stripeSessionId || null,
+      freeDeliveryEligible: params.freeDeliveryEligible ?? false,
+      freeDeliveryThreshold: params.freeDeliveryThreshold ?? null,
     };
 
     const docRef = await addDoc(collection(db, "orders"), payload);

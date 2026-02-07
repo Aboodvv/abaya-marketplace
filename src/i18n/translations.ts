@@ -194,14 +194,19 @@ export const translations = {
       freeDeliveryTitle: "Free delivery progress",
       freeDeliveryRemaining: "Add {count} more items to unlock free delivery",
       freeDeliveryUnlocked: "Free delivery unlocked",
+      freeDeliveryCheckout: "Free delivery will be applied at checkout",
     },
     orders: {
       title: "My Orders",
       empty: "You have no orders yet",
       orderId: "Order ID",
+      freeDeliveryApplied: "Free delivery",
       date: "Date",
       status: "Status",
       pending: "Pending",
+    },
+    success: {
+      freeDeliveryApplied: "Free delivery applied to this order",
     },
     admin: {
       title: "Admin Dashboard",
@@ -469,14 +474,19 @@ export const translations = {
       freeDeliveryTitle: "تقدم التوصيل المجاني",
       freeDeliveryRemaining: "أضيفي {count} منتجات لإتمام التوصيل المجاني",
       freeDeliveryUnlocked: "تم تفعيل التوصيل المجاني",
+      freeDeliveryCheckout: "سيتم تطبيق التوصيل المجاني عند الدفع",
     },
     orders: {
       title: "طلباتي",
       empty: "لا توجد طلبات حتى الآن",
       orderId: "رقم الطلب",
+      freeDeliveryApplied: "توصيل مجاني",
       date: "التاريخ",
       status: "الحالة",
       pending: "قيد المعالجة",
+    },
+    success: {
+      freeDeliveryApplied: "تم تطبيق التوصيل المجاني على هذا الطلب",
     },
     dailyPick: {
       title: "اختيار اليوم",
