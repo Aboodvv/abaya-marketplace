@@ -6,8 +6,10 @@ import Image from "next/image";
 import {
   addDoc,
   collection,
+  doc,
   getDocs,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -16,16 +18,23 @@ import { useSeller } from "@/context/SellerContext";
 import { Product } from "@/context/CartContext";
 
 interface SellerOrderItem {
+  id: string;
+  name: string;
+  nameAr: string;
+  image: string;
   sellerId?: string;
   price: number;
   quantity: number;
 }
+
+type SellerOrderStatus = "preparing" | "shipping" | "delivered";
 
 interface SellerOrder {
   id: string;
   items: SellerOrderItem[];
   total: number;
   createdAt: string;
+  sellerStatuses?: Record<string, SellerOrderStatus>;
 }
 
 interface Withdrawal {
@@ -41,6 +50,7 @@ export default function SellerDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<SellerOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     nameAr: "",
@@ -121,6 +131,24 @@ export default function SellerDashboardPage() {
     [withdrawals]
   );
   const availableBalance = Math.max(0, totalSales - withdrawnTotal);
+
+  const sellerOrders = useMemo(() => {
+    if (!sellerUser) return [] as SellerOrder[];
+    return orders.filter((order) =>
+      order.items?.some((item) => item.sellerId === sellerUser.uid)
+    );
+  }, [orders, sellerUser]);
+
+  const getSellerStatusLabel = (status: SellerOrderStatus) => {
+    switch (status) {
+      case "shipping":
+        return t.seller.orderStatusShipping;
+      case "delivered":
+        return t.seller.orderStatusDelivered;
+      default:
+        return t.seller.orderStatusPreparing;
+    }
+  };
 
   const handleProductChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -215,6 +243,28 @@ export default function SellerDashboardPage() {
     setWithdrawals(list as Withdrawal[]);
   };
 
+  const updateOrderStatus = async (orderId: string, status: SellerOrderStatus) => {
+    if (!sellerUser) return;
+    setUpdatingOrderId(orderId);
+    await updateDoc(doc(db, "orders", orderId), {
+      [`sellerStatuses.${sellerUser.uid}`]: status,
+    });
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              sellerStatuses: {
+                ...(order.sellerStatuses || {}),
+                [sellerUser.uid]: status,
+              },
+            }
+          : order
+      )
+    );
+    setUpdatingOrderId(null);
+  };
+
   if (sellerLoading) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
@@ -223,7 +273,7 @@ export default function SellerDashboardPage() {
     );
   }
 
-  if (!sellerUser || !sellerProfile) {
+  if (!sellerUser) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center">
@@ -244,6 +294,29 @@ export default function SellerDashboardPage() {
               {t.seller.register}
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sellerProfile) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            {lang === "ar" ? "تعذر تحميل ملف البائع" : "Seller profile not available"}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {lang === "ar"
+              ? "تم تسجيل دخولك ولكن بيانات المتجر لم تُحمّل. جرّب تحديث الصفحة."
+              : "You are signed in, but we couldn't load your store profile. Please refresh."}
+          </p>
+          <button
+            onClick={logoutSeller}
+            className="px-6 py-3 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition"
+          >
+            {lang === "ar" ? "تسجيل الخروج" : "Logout"}
+          </button>
         </div>
       </div>
     );
@@ -458,6 +531,108 @@ export default function SellerDashboardPage() {
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-10 border border-[#efe7da]">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.orders}</h2>
+          {sellerOrders.length === 0 ? (
+            <p className="text-gray-600">{t.seller.ordersEmpty}</p>
+          ) : (
+            <div className="space-y-4">
+              {sellerOrders.map((order) => {
+                const sellerItems = order.items.filter(
+                  (item) => item.sellerId === sellerUser.uid
+                );
+                const sellerTotal = sellerItems.reduce(
+                  (sum, item) => sum + item.price * item.quantity,
+                  0
+                );
+                const currentStatus =
+                  order.sellerStatuses?.[sellerUser.uid] ?? "preparing";
+
+                return (
+                  <div
+                    key={order.id}
+                    className="border border-[#efe7da] rounded-3xl p-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">{t.orders.orderId}</p>
+                        <p className="font-semibold text-gray-900">{order.id}</p>
+                        <p className="text-sm text-gray-600">
+                          {t.orders.date}: {" "}
+                          {new Date(order.createdAt).toLocaleString(
+                            lang === "ar" ? "ar-SA" : "en-US"
+                          )}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">{t.cart.total}</p>
+                        <p className="font-semibold text-gray-900">
+                          ${sellerTotal.toFixed(2)}
+                        </p>
+                        <span className="inline-flex mt-2 px-3 py-1 rounded-full bg-[#f7f4ef] text-[#7a5a1f] text-sm font-semibold">
+                          {getSellerStatusLabel(currentStatus)}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-500 mb-2">
+                          {t.seller.orderStatusLabel}
+                        </label>
+                        <select
+                          value={currentStatus}
+                          onChange={(event) =>
+                            updateOrderStatus(
+                              order.id,
+                              event.target.value as SellerOrderStatus
+                            )
+                          }
+                          disabled={updatingOrderId === order.id}
+                          className="border border-[#efe7da] rounded-full px-4 py-2"
+                        >
+                          <option value="preparing">
+                            {t.seller.orderStatusPreparing}
+                          </option>
+                          <option value="shipping">
+                            {t.seller.orderStatusShipping}
+                          </option>
+                          <option value="delivered">
+                            {t.seller.orderStatusDelivered}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 space-y-3">
+                      {sellerItems.map((item) => (
+                        <div key={item.id} className="flex items-center gap-4">
+                          <div className="relative w-14 h-14 rounded-2xl overflow-hidden">
+                            <Image
+                              src={item.image}
+                              alt={lang === "ar" ? item.nameAr : item.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900">
+                              {lang === "ar" ? item.nameAr : item.name}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {t.cart.quantity}: {item.quantity}
+                            </p>
+                          </div>
+                          <p className="font-semibold text-gray-900">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">

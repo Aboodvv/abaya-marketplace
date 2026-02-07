@@ -19,6 +19,9 @@ export interface OrderItem {
   price: number;
   image: string;
   quantity: number;
+  sellerId?: string;
+  sellerName?: string;
+  storeName?: string;
 }
 
 export interface Order {
@@ -65,6 +68,9 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
         price: item.price,
         image: item.image,
         quantity: item.quantity,
+        sellerId: item.sellerId,
+        sellerName: item.sellerName,
+        storeName: item.storeName,
       })),
       total: params.total,
       status: "pending" as const,

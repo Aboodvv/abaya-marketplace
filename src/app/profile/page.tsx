@@ -2,24 +2,34 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function ProfilePage() {
-  const { userProfile, updateProfile } = useAuth();
+  const { user, userProfile, updateProfile } = useAuth();
   const { lang } = useLanguage();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: userProfile?.name || "",
+    name: userProfile?.name || user?.displayName || "",
     phone: userProfile?.phone || "",
     address: userProfile?.address || "",
     city: userProfile?.city || "",
   });
 
-  if (!userProfile) {
+  useEffect(() => {
+    if (editing) return;
+    setFormData({
+      name: userProfile?.name || user?.displayName || "",
+      phone: userProfile?.phone || "",
+      address: userProfile?.address || "",
+      city: userProfile?.city || "",
+    });
+  }, [editing, user, userProfile]);
+
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
         <div className="text-center bg-white rounded-3xl shadow-xl p-10 border border-[#efe7da]">
@@ -72,35 +82,37 @@ export default function ProfilePage() {
                 <label className="text-gray-600 font-semibold">
                   {lang === "ar" ? "البريد الإلكتروني" : "Email"}
                 </label>
-                <p className="text-gray-900 text-lg">{userProfile.email}</p>
+                <p className="text-gray-900 text-lg">{userProfile?.email || user?.email || "-"}</p>
               </div>
 
               <div>
                 <label className="text-gray-600 font-semibold">
                   {lang === "ar" ? "الاسم" : "Name"}
                 </label>
-                <p className="text-gray-900 text-lg">{userProfile.name}</p>
+                <p className="text-gray-900 text-lg">
+                  {userProfile?.name || user?.displayName || "-"}
+                </p>
               </div>
 
               <div>
                 <label className="text-gray-600 font-semibold">
                   {lang === "ar" ? "رقم الهاتف" : "Phone"}
                 </label>
-                <p className="text-gray-900 text-lg">{userProfile.phone || "-"}</p>
+                <p className="text-gray-900 text-lg">{userProfile?.phone || "-"}</p>
               </div>
 
               <div>
                 <label className="text-gray-600 font-semibold">
                   {lang === "ar" ? "العنوان" : "Address"}
                 </label>
-                <p className="text-gray-900 text-lg">{userProfile.address || "-"}</p>
+                <p className="text-gray-900 text-lg">{userProfile?.address || "-"}</p>
               </div>
 
               <div>
                 <label className="text-gray-600 font-semibold">
                   {lang === "ar" ? "المدينة" : "City"}
                 </label>
-                <p className="text-gray-900 text-lg">{userProfile.city || "-"}</p>
+                <p className="text-gray-900 text-lg">{userProfile?.city || "-"}</p>
               </div>
 
               <button

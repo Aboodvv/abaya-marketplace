@@ -259,6 +259,11 @@ export const translations = {
       totalSales: "Total Sales",
       availableBalance: "Available Balance",
       orders: "Orders",
+      orderStatusLabel: "Order status",
+      orderStatusPreparing: "Preparing",
+      orderStatusShipping: "Out for delivery",
+      orderStatusDelivered: "Delivered",
+      ordersEmpty: "No orders yet",
     },
     common: {
       loading: "Loading...",
@@ -550,6 +555,11 @@ export const translations = {
       totalSales: "إجمالي المبيعات",
       availableBalance: "الرصيد المتاح",
       orders: "الطلبات",
+      orderStatusLabel: "حالة الطلب",
+      orderStatusPreparing: "تجهيز الطلب",
+      orderStatusShipping: "قيد التوصيل",
+      orderStatusDelivered: "تم الاستلام",
+      ordersEmpty: "لا توجد طلبات بعد",
     },
     common: {
       loading: "جاري التحميل...",

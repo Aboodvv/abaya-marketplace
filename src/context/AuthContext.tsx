@@ -41,23 +41,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setLoading(false);
 
-      if (currentUser) {
-        const fallbackName =
-          currentUser.displayName ||
-          currentUser.email?.split("@")[0] ||
-          "Customer";
-        const fallbackProfile: UserProfile = {
-          uid: currentUser.uid,
-          email: currentUser.email || "",
-          name: fallbackName,
-          phone: "",
-          address: "",
-          city: "",
-          createdAt: new Date().toISOString(),
-        };
+      if (!currentUser) {
+        setUserProfile(null);
+        return;
+      }
+
+      const fallbackName =
+        currentUser.displayName ||
+        currentUser.email?.split("@")[0] ||
+        "Customer";
+      const fallbackProfile: UserProfile = {
+        uid: currentUser.uid,
+        email: currentUser.email || "",
+        name: fallbackName,
+        phone: "",
+        address: "",
+        city: "",
+        createdAt: new Date().toISOString(),
+      };
+
+      (async () => {
         try {
           const docRef = doc(db, "users", currentUser.uid);
           const docSnap = await getDoc(docRef);
@@ -71,10 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error("Failed to load user profile", error);
           setUserProfile(fallbackProfile);
         }
-      } else {
-        setUserProfile(null);
-      }
-      setLoading(false);
+      })();
     });
 
     return unsubscribe;
@@ -96,7 +100,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    setUser(result.user);
+    const fallbackName =
+      result.user.displayName ||
+      result.user.email?.split("@")[0] ||
+      "Customer";
+    const fallbackProfile: UserProfile = {
+      uid: result.user.uid,
+      email: result.user.email || "",
+      name: fallbackName,
+      phone: "",
+      address: "",
+      city: "",
+      createdAt: new Date().toISOString(),
+    };
+    setUserProfile((prev) => prev ?? fallbackProfile);
   };
 
   const resetPassword = async (email: string) => {
