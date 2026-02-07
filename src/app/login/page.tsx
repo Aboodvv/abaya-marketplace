@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
 
 export default function LoginPage() {
   const { t, lang } = useLanguage();
@@ -21,10 +22,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      await login(email.trim(), password);
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "فشل تسجيل الدخول");
+      setError(getFirebaseAuthErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }

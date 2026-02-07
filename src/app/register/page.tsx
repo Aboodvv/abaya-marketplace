@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
 
 export default function RegisterPage() {
   const { t, lang } = useLanguage();
@@ -36,10 +37,14 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(formData.email, formData.password, formData.name);
+      await register(
+        formData.email.trim(),
+        formData.password,
+        formData.name.trim()
+      );
       router.push("/");
     } catch (err: any) {
-      setError(err.message || (lang === "ar" ? "فشل التسجيل" : "Registration failed"));
+      setError(getFirebaseAuthErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
