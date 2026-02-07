@@ -98,6 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const register = async (email: string, password: string, name: string) => {
+    await setPersistence(auth, browserLocalPersistence);
     const result = await createUserWithEmailAndPassword(auth, email, password);
     const newProfile: UserProfile = {
       uid: result.user.uid,
@@ -113,6 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
+    await setPersistence(auth, browserLocalPersistence);
     await signInWithEmailAndPassword(auth, email, password);
   };
 

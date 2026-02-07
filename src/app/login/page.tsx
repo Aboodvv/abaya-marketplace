@@ -9,7 +9,7 @@ import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
 
 export default function LoginPage() {
   const { t, lang } = useLanguage();
-  const { login, resetPassword } = useAuth();
+  const { login, resetPassword, user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,12 +18,20 @@ export default function LoginPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 4000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (pendingRedirect && user) {
+      router.replace("/");
+    }
+  }, [authLoading, pendingRedirect, router, user]);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -32,11 +40,12 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setToast(null);
+    setPendingRedirect(false);
     setLoading(true);
 
     try {
       await login(email.trim(), password);
-      router.push("/");
+      setPendingRedirect(true);
     } catch (err: any) {
       showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {

@@ -9,7 +9,7 @@ import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
 
 export default function RegisterPage() {
   const { t, lang } = useLanguage();
-  const { register } = useAuth();
+  const { register, user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -22,12 +22,20 @@ export default function RegisterPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 4000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (pendingRedirect && user) {
+      router.replace("/");
+    }
+  }, [authLoading, pendingRedirect, router, user]);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -41,6 +49,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setToast(null);
+    setPendingRedirect(false);
 
     if (formData.password !== formData.confirmPassword) {
       showToast(
@@ -58,7 +67,7 @@ export default function RegisterPage() {
         formData.password,
         formData.name.trim()
       );
-      router.push("/");
+      setPendingRedirect(true);
     } catch (err: any) {
       showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {
