@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCart } from "@/context/CartContext";
 import { products as localProducts } from "@/data/products";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -18,7 +19,11 @@ type ProductWithFlags = Product & {
 
 export default function DailyPicksPage() {
   const { t, lang } = useLanguage();
+  const { totalItems } = useCart();
   const [products, setProducts] = useState<Product[]>(localProducts);
+  const freeDeliveryTarget = 3;
+  const remainingForFreeDelivery = Math.max(0, freeDeliveryTarget - totalItems);
+  const progressPercent = Math.min(100, (totalItems / freeDeliveryTarget) * 100);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -62,6 +67,29 @@ export default function DailyPicksPage() {
             {t.dailyPick.title}
           </h1>
           <p className="text-gray-600 mt-2">{t.dailyPick.subtitle}</p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-[#efe7da]">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <p className="text-sm font-semibold text-gray-900">
+              {t.dailyPick.freeDeliveryTitle}
+            </p>
+            <span className="text-sm text-gray-600">{Math.round(progressPercent)}%</span>
+          </div>
+          <div className="h-3 rounded-full bg-[#f7f4ef] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#c7a86a] transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="mt-3 text-sm text-gray-600">
+            {remainingForFreeDelivery === 0
+              ? t.dailyPick.freeDeliveryUnlocked
+              : t.dailyPick.freeDeliveryRemaining.replace(
+                  "{count}",
+                  String(remainingForFreeDelivery)
+                )}
+          </p>
         </div>
 
         {dailyPicks.length === 0 ? (

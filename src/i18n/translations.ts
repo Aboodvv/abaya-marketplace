@@ -269,6 +269,9 @@ export const translations = {
       title: "Today's Picks",
       subtitle: "Handpicked styles for today",
       empty: "No picks available today",
+      freeDeliveryTitle: "Free delivery progress",
+      freeDeliveryRemaining: "Add {count} more items to unlock free delivery",
+      freeDeliveryUnlocked: "Free delivery unlocked",
     },
   },
   ar: {
@@ -479,6 +482,9 @@ export const translations = {
       title: "اختيار اليوم",
       subtitle: "مختارات أنيقة خصيصا لهذا اليوم",
       empty: "لا توجد اختيارات متاحة اليوم",
+      freeDeliveryTitle: "تقدم التوصيل المجاني",
+      freeDeliveryRemaining: "أضيفي {count} منتجات لإتمام التوصيل المجاني",
+      freeDeliveryUnlocked: "تم تفعيل التوصيل المجاني",
     },
     admin: {
       title: "لوحة الإدارة",
