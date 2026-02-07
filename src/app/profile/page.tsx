@@ -52,14 +52,15 @@ export default function ProfilePage() {
   );
 
   const quickActions = useMemo(
-    () => [
-      { key: "orders", href: "/orders", icon: ShoppingBag },
-      { key: "favorites", href: "/favorites", icon: Heart },
-      { key: "notifications", href: "/notifications", icon: Bell },
-      { key: "cart", href: "/cart", icon: ShoppingCart },
-      { key: "products", href: "/products", icon: Store },
-      { key: "seller", href: "/seller/login", icon: Store },
-    ],
+    () =>
+      [
+        { key: "orders", href: "/orders", icon: ShoppingBag },
+        { key: "favorites", href: "/favorites", icon: Heart },
+        { key: "notifications", href: "/notifications", icon: Bell },
+        { key: "cart", href: "/cart", icon: ShoppingCart },
+        { key: "products", href: "/products", icon: Store },
+        { key: "seller", href: "/seller/login", icon: Store },
+      ] as const,
     []
   );
 
