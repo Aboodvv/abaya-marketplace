@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
@@ -11,7 +11,10 @@ export default function SellerRegisterPage() {
   const { registerSeller } = useSeller();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const usernamePattern = /^[a-z0-9._-]+$/i;
   const maxDocumentSizeMb = 5;
   const [form, setForm] = useState({
@@ -24,6 +27,16 @@ export default function SellerRegisterPage() {
   });
   const [documentFile, setDocumentFile] = useState<File | null>(null);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -31,13 +44,17 @@ export default function SellerRegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setToast(null);
     if (!documentFile) {
-      setError(lang === "ar" ? "يرجى رفع الوثيقة" : "Please upload the document");
+      showToast(
+        "error",
+        lang === "ar" ? "يرجى رفع الوثيقة" : "Please upload the document"
+      );
       return;
     }
     if (documentFile.size > maxDocumentSizeMb * 1024 * 1024) {
-      setError(
+      showToast(
+        "error",
         lang === "ar"
           ? `حجم الملف كبير، الحد الأقصى ${maxDocumentSizeMb}MB`
           : `File is too large. Max ${maxDocumentSizeMb}MB`
@@ -45,7 +62,8 @@ export default function SellerRegisterPage() {
       return;
     }
     if (!usernamePattern.test(form.username.trim())) {
-      setError(
+      showToast(
+        "error",
         lang === "ar"
           ? "اسم المستخدم يجب أن يحتوي على حروف/أرقام فقط ويمكن استخدام . _ -"
           : "Username must contain only letters/numbers and may include . _ -"
@@ -80,7 +98,10 @@ export default function SellerRegisterPage() {
 
       router.push("/seller/dashboard");
     } catch (err: any) {
-      setError(err.message || (lang === "ar" ? "فشل تسجيل البائع" : "Failed to register"));
+      showToast(
+        "error",
+        err.message || (lang === "ar" ? "فشل تسجيل البائع" : "Failed to register")
+      );
     } finally {
       setLoading(false);
     }
@@ -99,8 +120,18 @@ export default function SellerRegisterPage() {
             : "Your registration will be reviewed before product access is enabled."}
         </p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>
+        {toast && (
+          <div
+            className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-lg transition ${
+              toast.type === "success"
+                ? "border-green-200 bg-green-50 text-green-700"
+                : "border-red-200 bg-red-50 text-red-700"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {toast.message}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">

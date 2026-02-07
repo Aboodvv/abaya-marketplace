@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
@@ -13,15 +13,28 @@ export default function SellerLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const usernamePattern = /^[a-z0-9._-]+$/i;
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setToast(null);
     setLoading(true);
     if (!usernamePattern.test(username.trim())) {
-      setError(lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username");
+      showToast("error", lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username");
       setLoading(false);
       return;
     }
@@ -29,7 +42,10 @@ export default function SellerLoginPage() {
       await loginSeller(username, password);
       router.push("/seller/dashboard");
     } catch (err: any) {
-      setError(err.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed"));
+      showToast(
+        "error",
+        err.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed")
+      );
     } finally {
       setLoading(false);
     }
@@ -43,8 +59,18 @@ export default function SellerLoginPage() {
         </h1>
         <p className="text-gray-600 mb-6 text-center">{t.seller.title}</p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>
+        {toast && (
+          <div
+            className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-lg transition ${
+              toast.type === "success"
+                ? "border-green-200 bg-green-50 text-green-700"
+                : "border-red-200 bg-red-50 text-red-700"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {toast.message}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">

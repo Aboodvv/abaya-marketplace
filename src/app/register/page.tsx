@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
@@ -18,7 +18,20 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,10 +40,13 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setToast(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError(lang === "ar" ? "كلمات المرور غير متطابقة" : "Passwords do not match");
+      showToast(
+        "error",
+        lang === "ar" ? "كلمات المرور غير متطابقة" : "Passwords do not match"
+      );
       return;
     }
 
@@ -44,7 +60,7 @@ export default function RegisterPage() {
       );
       router.push("/");
     } catch (err: any) {
-      setError(getFirebaseAuthErrorMessage(err, lang));
+      showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
@@ -63,9 +79,17 @@ export default function RegisterPage() {
           {lang === "ar" ? "انضم إلينا الآن" : "Join us today"}
         </p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            {error}
+        {toast && (
+          <div
+            className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-lg transition ${
+              toast.type === "success"
+                ? "border-green-200 bg-green-50 text-green-700"
+                : "border-red-200 bg-red-50 text-red-700"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {toast.message}
           </div>
         )}
 
