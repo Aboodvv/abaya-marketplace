@@ -70,8 +70,8 @@ export default function Home() {
       const id = window.requestIdleCallback(() => task(), { timeout: 1500 });
       return () => window.cancelIdleCallback(id);
     }
-    const timeoutId = window.setTimeout(task, 800);
-    return () => window.clearTimeout(timeoutId);
+    const timeoutId = setTimeout(task, 800);
+    return () => clearTimeout(timeoutId);
   };
 
   useEffect(() => {
