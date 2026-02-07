@@ -14,12 +14,7 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const { user, userProfile, logout, loading } = useAuth();
   const { unreadCount, loadNotifications } = useNotifications();
-  const isAdmin = isAdminUser(userProfile, user?.email);
-  const displayName =
-    userProfile?.name ||
-    user?.displayName ||
-    user?.email ||
-    (lang === "ar" ? "حسابي" : "My Account");
+  const isAdmin = isAdminUser(userProfile);
   const topBarItems = [
     { key: "explore", href: "/explore", label: t.topbar.explore },
     { key: "abayas", href: "/abayas", label: t.topbar.abayas },
@@ -94,7 +89,7 @@ export default function Navbar() {
               {lang === "en" ? "العربية" : "English"}
             </button>
 
-            {!loading && user ? (
+            {!loading && user && userProfile ? (
               <div
                 className={`flex items-center gap-2 ${dir === "rtl" ? "flex-row-reverse" : ""}`}
               >
@@ -120,7 +115,7 @@ export default function Navbar() {
                   className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-full hover:border-[#c7a86a] transition text-sm"
                 >
                   <User size={18} />
-                  <span className="hidden sm:inline">{displayName}</span>
+                  <span className="hidden sm:inline">{userProfile.name}</span>
                 </Link>
                 <button
                   onClick={handleLogout}

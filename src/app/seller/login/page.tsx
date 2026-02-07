@@ -34,7 +34,10 @@ export default function SellerLoginPage() {
     setToast(null);
     setLoading(true);
     if (!usernamePattern.test(username.trim())) {
-      showToast("error", lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username");
+      showToast(
+        "error",
+        lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username"
+      );
       setLoading(false);
       return;
     }

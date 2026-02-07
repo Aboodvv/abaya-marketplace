@@ -41,44 +41,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
 
-      if (!currentUser) {
-        setUserProfile(null);
-        return;
-      }
-
-      const fallbackName =
-        currentUser.displayName ||
-        currentUser.email?.split("@")[0] ||
-        "Customer";
-      const fallbackProfile: UserProfile = {
-        uid: currentUser.uid,
-        email: currentUser.email || "",
-        name: fallbackName,
-        phone: "",
-        address: "",
-        city: "",
-        createdAt: new Date().toISOString(),
-      };
-
-      (async () => {
-        try {
-          const docRef = doc(db, "users", currentUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserProfile(docSnap.data() as UserProfile);
-          } else {
-            setUserProfile(fallbackProfile);
-            await setDoc(docRef, fallbackProfile, { merge: true });
-          }
-        } catch (error) {
-          console.error("Failed to load user profile", error);
-          setUserProfile(fallbackProfile);
+      if (currentUser) {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUserProfile(docSnap.data() as UserProfile);
         }
-      })();
+      } else {
+        setUserProfile(null);
+      }
+      setLoading(false);
     });
 
     return unsubscribe;
@@ -100,22 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    setUser(result.user);
-    const fallbackName =
-      result.user.displayName ||
-      result.user.email?.split("@")[0] ||
-      "Customer";
-    const fallbackProfile: UserProfile = {
-      uid: result.user.uid,
-      email: result.user.email || "",
-      name: fallbackName,
-      phone: "",
-      address: "",
-      city: "",
-      createdAt: new Date().toISOString(),
-    };
-    setUserProfile((prev) => prev ?? fallbackProfile);
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
   const resetPassword = async (email: string) => {
@@ -130,16 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
     const docRef = doc(db, "users", user.uid);
-    const fallbackProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email || "",
-      name: user.displayName || user.email?.split("@")[0] || "Customer",
-      phone: "",
-      address: "",
-      city: "",
-      createdAt: new Date().toISOString(),
-    };
-    const updated = { ...(userProfile || fallbackProfile), ...data } as UserProfile;
+    const updated = { ...userProfile, ...data } as UserProfile;
     await setDoc(docRef, updated, { merge: true });
     setUserProfile(updated);
   };

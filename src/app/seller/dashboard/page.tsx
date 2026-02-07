@@ -6,10 +6,8 @@ import Image from "next/image";
 import {
   addDoc,
   collection,
-  doc,
   getDocs,
   query,
-  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -18,23 +16,16 @@ import { useSeller } from "@/context/SellerContext";
 import { Product } from "@/context/CartContext";
 
 interface SellerOrderItem {
-  id: string;
-  name: string;
-  nameAr: string;
-  image: string;
   sellerId?: string;
   price: number;
   quantity: number;
 }
-
-type SellerOrderStatus = "preparing" | "shipping" | "delivered";
 
 interface SellerOrder {
   id: string;
   items: SellerOrderItem[];
   total: number;
   createdAt: string;
-  sellerStatuses?: Record<string, SellerOrderStatus>;
 }
 
 interface Withdrawal {
@@ -50,7 +41,6 @@ export default function SellerDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<SellerOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     nameAr: "",
@@ -63,13 +53,8 @@ export default function SellerDashboardPage() {
     inStock: true,
   });
   const [savingProduct, setSavingProduct] = useState(false);
-  const [productError, setProductError] = useState("");
-  const [withdrawError, setWithdrawError] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [savingWithdraw, setSavingWithdraw] = useState(false);
-  const approvalStatus =
-    sellerProfile?.approvalStatus ?? (sellerProfile?.approved ? "approved" : "pending");
-  const isApproved = approvalStatus === "approved";
 
   useEffect(() => {
     if (!sellerUser) return;
@@ -132,24 +117,6 @@ export default function SellerDashboardPage() {
   );
   const availableBalance = Math.max(0, totalSales - withdrawnTotal);
 
-  const sellerOrders = useMemo(() => {
-    if (!sellerUser) return [] as SellerOrder[];
-    return orders.filter((order) =>
-      order.items?.some((item) => item.sellerId === sellerUser.uid)
-    );
-  }, [orders, sellerUser]);
-
-  const getSellerStatusLabel = (status: SellerOrderStatus) => {
-    switch (status) {
-      case "shipping":
-        return t.seller.orderStatusShipping;
-      case "delivered":
-        return t.seller.orderStatusDelivered;
-      default:
-        return t.seller.orderStatusPreparing;
-    }
-  };
-
   const handleProductChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -162,20 +129,7 @@ export default function SellerDashboardPage() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProductError("");
     if (!sellerUser || !sellerProfile) return;
-    if (!isApproved) {
-      setProductError(
-        approvalStatus === "rejected"
-          ? lang === "ar"
-            ? "تم رفض حسابك ولا يمكنك إضافة منتجات"
-            : "Your account was rejected and you cannot add products"
-          : lang === "ar"
-            ? "حسابك قيد المراجعة ولا يمكنك إضافة منتجات بعد"
-            : "Your account is under review and you cannot add products yet"
-      );
-      return;
-    }
     setSavingProduct(true);
     await addDoc(collection(db, "products"), {
       ...form,
@@ -208,20 +162,7 @@ export default function SellerDashboardPage() {
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
-    setWithdrawError("");
     if (!sellerUser) return;
-    if (!isApproved) {
-      setWithdrawError(
-        approvalStatus === "rejected"
-          ? lang === "ar"
-            ? "تم رفض حسابك ولا يمكنك طلب سحب"
-            : "Your account was rejected and you cannot request withdrawals"
-          : lang === "ar"
-            ? "حسابك قيد المراجعة ولا يمكنك طلب سحب بعد"
-            : "Your account is under review and you cannot request withdrawals yet"
-      );
-      return;
-    }
     const amount = Number(withdrawAmount);
     if (!amount || amount <= 0) return;
     setSavingWithdraw(true);
@@ -243,28 +184,6 @@ export default function SellerDashboardPage() {
     setWithdrawals(list as Withdrawal[]);
   };
 
-  const updateOrderStatus = async (orderId: string, status: SellerOrderStatus) => {
-    if (!sellerUser) return;
-    setUpdatingOrderId(orderId);
-    await updateDoc(doc(db, "orders", orderId), {
-      [`sellerStatuses.${sellerUser.uid}`]: status,
-    });
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              sellerStatuses: {
-                ...(order.sellerStatuses || {}),
-                [sellerUser.uid]: status,
-              },
-            }
-          : order
-      )
-    );
-    setUpdatingOrderId(null);
-  };
-
   if (sellerLoading) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
@@ -273,7 +192,7 @@ export default function SellerDashboardPage() {
     );
   }
 
-  if (!sellerUser) {
+  if (!sellerUser || !sellerProfile) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center">
@@ -294,29 +213,6 @@ export default function SellerDashboardPage() {
               {t.seller.register}
             </Link>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!sellerProfile) {
-    return (
-      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {lang === "ar" ? "تعذر تحميل ملف البائع" : "Seller profile not available"}
-          </h1>
-          <p className="text-gray-600 mb-6">
-            {lang === "ar"
-              ? "تم تسجيل دخولك ولكن بيانات المتجر لم تُحمّل. جرّب تحديث الصفحة."
-              : "You are signed in, but we couldn't load your store profile. Please refresh."}
-          </p>
-          <button
-            onClick={logoutSeller}
-            className="px-6 py-3 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition"
-          >
-            {lang === "ar" ? "تسجيل الخروج" : "Logout"}
-          </button>
         </div>
       </div>
     );
@@ -353,37 +249,9 @@ export default function SellerDashboardPage() {
           </div>
         </div>
 
-        {!isApproved && (
-          <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 mb-10">
-            <p className="font-semibold text-amber-800 mb-1">
-              {approvalStatus === "rejected"
-                ? lang === "ar"
-                  ? "تم رفض تسجيلك كبائع"
-                  : "Your seller registration was rejected"
-                : lang === "ar"
-                  ? "تسجيلك كبائع قيد المراجعة"
-                  : "Your seller registration is under review"}
-            </p>
-            <p className="text-sm text-amber-700">
-              {approvalStatus === "rejected"
-                ? lang === "ar"
-                  ? "يرجى التواصل مع الإدارة لمزيد من التفاصيل."
-                  : "Please contact admin for more details."
-                : lang === "ar"
-                  ? "سيتم تفعيل إضافة المنتجات بعد الموافقة."
-                  : "You can add products after approval."}
-            </p>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
           <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.addProduct}</h2>
-            {productError && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-                {productError}
-              </div>
-            )}
             <form onSubmit={handleAddProduct} className="space-y-4">
               <input
                 name="name"
@@ -391,7 +259,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={lang === "ar" ? "الاسم (EN)" : "Name (EN)"}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                disabled={!isApproved}
                 required
               />
               <input
@@ -400,7 +267,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={lang === "ar" ? "الاسم (AR)" : "Name (AR)"}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                disabled={!isApproved}
                 required
               />
               <input
@@ -411,7 +277,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.price}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                disabled={!isApproved}
                 required
               />
               <input
@@ -420,7 +285,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.image}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                disabled={!isApproved}
                 required
               />
               <textarea
@@ -429,7 +293,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.descriptionEn}
                 className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
-                disabled={!isApproved}
                 rows={2}
               />
               <textarea
@@ -438,7 +301,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.descriptionAr}
                 className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
-                disabled={!isApproved}
                 rows={2}
               />
               <input
@@ -447,7 +309,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.categoryEn}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                disabled={!isApproved}
                 required
               />
               <input
@@ -456,7 +317,6 @@ export default function SellerDashboardPage() {
                 onChange={handleProductChange}
                 placeholder={t.admin.categoryAr}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                disabled={!isApproved}
                 required
               />
               <label className="flex items-center gap-2 text-gray-700">
@@ -465,17 +325,14 @@ export default function SellerDashboardPage() {
                   name="inStock"
                   checked={form.inStock}
                   onChange={handleProductChange}
-                  disabled={!isApproved}
                 />
                 {t.admin.inStock}
               </label>
               <button
                 type="submit"
-                disabled={savingProduct || !isApproved}
+                disabled={savingProduct}
                 className={`w-full py-3 rounded-full font-semibold transition ${
-                  savingProduct || !isApproved
-                    ? "bg-gray-300"
-                    : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+                  savingProduct ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
                 }`}
               >
                 {savingProduct ? t.common.loading : t.seller.addProduct}
@@ -494,11 +351,6 @@ export default function SellerDashboardPage() {
                 <span className="font-semibold">${availableBalance.toFixed(2)}</span>
               </p>
             </div>
-            {withdrawError && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-                {withdrawError}
-              </div>
-            )}
             <form onSubmit={handleWithdraw} className="space-y-4">
               <input
                 type="number"
@@ -507,16 +359,13 @@ export default function SellerDashboardPage() {
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder={lang === "ar" ? "مبلغ السحب" : "Withdraw amount"}
                 className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                disabled={!isApproved}
                 required
               />
               <button
                 type="submit"
-                disabled={savingWithdraw || !isApproved}
+                disabled={savingWithdraw}
                 className={`w-full py-3 rounded-full font-semibold transition ${
-                  savingWithdraw || !isApproved
-                    ? "bg-gray-300"
-                    : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+                  savingWithdraw ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
                 }`}
               >
                 {savingWithdraw ? t.common.loading : t.seller.withdraw}
@@ -531,108 +380,6 @@ export default function SellerDashboardPage() {
               ))}
             </div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-3xl shadow-xl p-6 mb-10 border border-[#efe7da]">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.orders}</h2>
-          {sellerOrders.length === 0 ? (
-            <p className="text-gray-600">{t.seller.ordersEmpty}</p>
-          ) : (
-            <div className="space-y-4">
-              {sellerOrders.map((order) => {
-                const sellerItems = order.items.filter(
-                  (item) => item.sellerId === sellerUser.uid
-                );
-                const sellerTotal = sellerItems.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
-                  0
-                );
-                const currentStatus =
-                  order.sellerStatuses?.[sellerUser.uid] ?? "preparing";
-
-                return (
-                  <div
-                    key={order.id}
-                    className="border border-[#efe7da] rounded-3xl p-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">{t.orders.orderId}</p>
-                        <p className="font-semibold text-gray-900">{order.id}</p>
-                        <p className="text-sm text-gray-600">
-                          {t.orders.date}: {" "}
-                          {new Date(order.createdAt).toLocaleString(
-                            lang === "ar" ? "ar-SA" : "en-US"
-                          )}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">{t.cart.total}</p>
-                        <p className="font-semibold text-gray-900">
-                          ${sellerTotal.toFixed(2)}
-                        </p>
-                        <span className="inline-flex mt-2 px-3 py-1 rounded-full bg-[#f7f4ef] text-[#7a5a1f] text-sm font-semibold">
-                          {getSellerStatusLabel(currentStatus)}
-                        </span>
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-500 mb-2">
-                          {t.seller.orderStatusLabel}
-                        </label>
-                        <select
-                          value={currentStatus}
-                          onChange={(event) =>
-                            updateOrderStatus(
-                              order.id,
-                              event.target.value as SellerOrderStatus
-                            )
-                          }
-                          disabled={updatingOrderId === order.id}
-                          className="border border-[#efe7da] rounded-full px-4 py-2"
-                        >
-                          <option value="preparing">
-                            {t.seller.orderStatusPreparing}
-                          </option>
-                          <option value="shipping">
-                            {t.seller.orderStatusShipping}
-                          </option>
-                          <option value="delivered">
-                            {t.seller.orderStatusDelivered}
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 space-y-3">
-                      {sellerItems.map((item) => (
-                        <div key={item.id} className="flex items-center gap-4">
-                          <div className="relative w-14 h-14 rounded-2xl overflow-hidden">
-                            <Image
-                              src={item.image}
-                              alt={lang === "ar" ? item.nameAr : item.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-gray-900">
-                              {lang === "ar" ? item.nameAr : item.name}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {t.cart.quantity}: {item.quantity}
-                            </p>
-                          </div>
-                          <p className="font-semibold text-gray-900">
-                            ${(item.price * item.quantity).toFixed(2)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">

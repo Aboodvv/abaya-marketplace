@@ -72,7 +72,7 @@ const emptyProduct = {
 export default function AdminPage() {
   const { lang, t } = useLanguage();
   const { user, userProfile, loading: authLoading } = useAuth();
-  const isAdmin = isAdminUser(userProfile, user?.email);
+  const isAdmin = isAdminUser(userProfile);
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
