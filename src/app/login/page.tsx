@@ -9,21 +9,42 @@ import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
 
 export default function LoginPage() {
   const { t, lang } = useLanguage();
-  const { login } = useAuth();
+  const { login, resetPassword } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setResetMessage("");
     setLoading(true);
 
     try {
       await login(email.trim(), password);
       router.push("/");
+    } catch (err: any) {
+      setError(getFirebaseAuthErrorMessage(err, lang));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setError("");
+    setResetMessage("");
+    if (!email.trim()) {
+      setError(t.login.resetMissingEmail);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await resetPassword(email.trim());
+      setResetMessage(t.login.resetSent);
     } catch (err: any) {
       setError(getFirebaseAuthErrorMessage(err, lang));
     } finally {
@@ -45,6 +66,11 @@ export default function LoginPage() {
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
             {error}
+          </div>
+        )}
+        {resetMessage && (
+          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+            {resetMessage}
           </div>
         )}
 
@@ -91,6 +117,14 @@ export default function LoginPage() {
         </form>
 
         <div className="text-center">
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={loading}
+            className="mb-4 text-sm font-semibold text-[#7a5a1f] hover:text-[#c7a86a] transition"
+          >
+            {t.login.forgotPassword}
+          </button>
           <p className="text-gray-600 mb-3">
             {lang === "ar" ? "ليس لديك حساب؟ " : "Don't have an account? "}
             <Link

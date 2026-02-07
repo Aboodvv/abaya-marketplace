@@ -234,6 +234,9 @@ export const translations = {
       password: "Password",
       submit: "Sign In",
       subtitle: "Enter your credentials to continue",
+      forgotPassword: "Forgot your password?",
+      resetSent: "Password reset email sent",
+      resetMissingEmail: "Enter your email to reset your password",
     },
     seller: {
       title: "Seller Portal",
@@ -522,6 +525,9 @@ export const translations = {
       password: "كلمة المرور",
       submit: "دخول",
       subtitle: "أدخل بياناتك للمتابعة",
+      forgotPassword: "نسيت كلمة المرور؟",
+      resetSent: "تم إرسال رابط إعادة التعيين",
+      resetMissingEmail: "أدخلي بريدك لإعادة تعيين كلمة المرور",
     },
     seller: {
       title: "بوابة البائعين",

@@ -14,6 +14,7 @@ const messages = {
     "auth/operation-not-allowed": "Email/password sign-in is disabled in Firebase.",
     "auth/network-request-failed": "Network error. Please try again.",
     "auth/invalid-api-key": "Firebase API key is invalid or missing.",
+    "auth/missing-email": "Please enter your email address.",
   },
   ar: {
     "auth/invalid-credential": "بيانات الدخول غير صحيحة. تحققي من البريد وكلمة المرور وإعدادات Firebase.",
@@ -25,6 +26,7 @@ const messages = {
     "auth/operation-not-allowed": "تسجيل الدخول بالبريد غير مفعّل في Firebase.",
     "auth/network-request-failed": "مشكلة في الشبكة. حاولي مرة أخرى.",
     "auth/invalid-api-key": "مفتاح Firebase غير صحيح أو غير موجود.",
+    "auth/missing-email": "يرجى إدخال البريد الإلكتروني.",
   },
 } as const;
 
