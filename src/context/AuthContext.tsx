@@ -45,26 +45,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(currentUser);
 
       if (currentUser) {
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setUserProfile(docSnap.data() as UserProfile);
-        } else {
-          const fallbackName =
-            currentUser.displayName ||
-            currentUser.email?.split("@")[0] ||
-            "Customer";
-          const newProfile: UserProfile = {
-            uid: currentUser.uid,
-            email: currentUser.email || "",
-            name: fallbackName,
-            phone: "",
-            address: "",
-            city: "",
-            createdAt: new Date().toISOString(),
-          };
-          await setDoc(docRef, newProfile, { merge: true });
-          setUserProfile(newProfile);
+        const fallbackName =
+          currentUser.displayName ||
+          currentUser.email?.split("@")[0] ||
+          "Customer";
+        const fallbackProfile: UserProfile = {
+          uid: currentUser.uid,
+          email: currentUser.email || "",
+          name: fallbackName,
+          phone: "",
+          address: "",
+          city: "",
+          createdAt: new Date().toISOString(),
+        };
+        try {
+          const docRef = doc(db, "users", currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setUserProfile(docSnap.data() as UserProfile);
+          } else {
+            setUserProfile(fallbackProfile);
+            await setDoc(docRef, fallbackProfile, { merge: true });
+          }
+        } catch (error) {
+          console.error("Failed to load user profile", error);
+          setUserProfile(fallbackProfile);
         }
       } else {
         setUserProfile(null);
@@ -106,7 +111,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
     const docRef = doc(db, "users", user.uid);
-    const updated = { ...userProfile, ...data } as UserProfile;
+    const fallbackProfile: UserProfile = {
+      uid: user.uid,
+      email: user.email || "",
+      name: user.displayName || user.email?.split("@")[0] || "Customer",
+      phone: "",
+      address: "",
+      city: "",
+      createdAt: new Date().toISOString(),
+    };
+    const updated = { ...(userProfile || fallbackProfile), ...data } as UserProfile;
     await setDoc(docRef, updated, { merge: true });
     setUserProfile(updated);
   };
