@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
@@ -14,39 +14,49 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [resetMessage, setResetMessage] = useState("");
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setResetMessage("");
+    setToast(null);
     setLoading(true);
 
     try {
       await login(email.trim(), password);
       router.push("/");
     } catch (err: any) {
-      setError(getFirebaseAuthErrorMessage(err, lang));
+      showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = async () => {
-    setError("");
-    setResetMessage("");
+    setToast(null);
     if (!email.trim()) {
-      setError(t.login.resetMissingEmail);
+      showToast("error", t.login.resetMissingEmail);
       return;
     }
 
     setLoading(true);
     try {
       await resetPassword(email.trim());
-      setResetMessage(t.login.resetSent);
+      showToast("success", t.login.resetSent);
     } catch (err: any) {
-      setError(getFirebaseAuthErrorMessage(err, lang));
+      showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
@@ -63,14 +73,17 @@ export default function LoginPage() {
         </h1>
         <p className="text-gray-600 mb-8 text-center">{t.login.subtitle}</p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
-        {resetMessage && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
-            {resetMessage}
+        {toast && (
+          <div
+            className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-lg transition ${
+              toast.type === "success"
+                ? "border-green-200 bg-green-50 text-green-700"
+                : "border-red-200 bg-red-50 text-red-700"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {toast.message}
           </div>
         )}
 
