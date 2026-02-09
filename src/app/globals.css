@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --main-maroon: #7b1f2f;
+  --text-dark: #222222;
+  --text-muted: #777777;
 }
 
 @theme inline {
@@ -23,6 +26,76 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.side-menu-overlay {
+  background: #ffffff;
+}
+
+.side-menu {
+  position: absolute;
+  top: 0;
+  width: 280px;
+  background: #ffffff;
+  padding: 16px 18px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+}
+
+.menu-close {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  color: var(--main-maroon);
+}
+
+.menu-close:hover {
+  color: #5f1825;
+}
+
+.menu-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.menu-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--main-maroon);
+}
+
+.menu-logo-sub {
+  font-size: 12px;
+  color: #c7a86a;
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 15px;
+  color: var(--text-dark);
+}
+
+.menu-item-link {
+  flex: 1;
+  color: inherit;
+}
+
+.menu-item:hover {
+  color: var(--main-maroon);
+}
+
+.menu-chevron {
+  color: var(--text-muted);
 }
 
 .marquee {

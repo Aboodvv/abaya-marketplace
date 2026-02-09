@@ -200,46 +200,43 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50">
           <button
             type="button"
-            className="absolute inset-0 bg-black/10"
+            className="absolute inset-0 side-menu-overlay"
             aria-label={lang === "ar" ? "إغلاق القائمة" : "Close menu"}
             onClick={() => setIsMenuOpen(false)}
           />
           <div
-            className={`absolute top-0 ${
-              dir === "rtl" ? "right-0" : "left-0"
-            } h-full w-72 bg-white text-gray-900 shadow-2xl p-6`}
+            className={`side-menu ${dir === "rtl" ? "right-0" : "left-0"} h-full`}
           >
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(false)}
-                className="p-2 text-gray-700 hover:text-gray-900 transition"
-                aria-label={lang === "ar" ? "إغلاق" : "Close"}
-              >
-                <X size={22} />
-              </button>
-              <span className="text-xl font-bold text-gray-900">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(false)}
+              className="menu-close"
+              aria-label={lang === "ar" ? "إغلاق" : "Close"}
+            >
+              <X size={22} />
+            </button>
+            <div className="menu-header">
+              <span className="menu-logo">
                 {lang === "ar" ? "برزن" : "Barzn"}
-                <span className={`text-sm text-[#c7a86a] ${dir === "rtl" ? "mr-2" : "ml-2"}`}>
+                <span className={`menu-logo-sub ${dir === "rtl" ? "mr-2" : "ml-2"}`}>
                   Abaya
                 </span>
               </span>
             </div>
-            <nav className="mt-10 space-y-6">
+            <ul className="menu-list">
               {menuItems.map((item) => (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center justify-between text-lg font-semibold text-gray-900 hover:text-gray-900 transition ${
-                    dir === "rtl" ? "text-right" : "text-left"
-                  }`}
-                >
-                  <span>{item.label}</span>
-                  <span className="text-gray-300">&#8249;</span>
-                </Link>
+                <li key={item.key} className="menu-item">
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`menu-item-link ${dir === "rtl" ? "text-right" : "text-left"}`}
+                  >
+                    {item.label}
+                  </Link>
+                  <span className="menu-chevron">&#8249;</span>
+                </li>
               ))}
-            </nav>
+            </ul>
           </div>
         </div>
       )}
