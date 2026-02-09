@@ -213,13 +213,16 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsMenuOpen(false)}
-                className="p-2 text-[#8a2c5f] hover:text-[#6d1f4c] transition"
+                className="p-2 text-gray-700 hover:text-gray-900 transition"
                 aria-label={lang === "ar" ? "إغلاق" : "Close"}
               >
                 <X size={22} />
               </button>
-              <span className="rounded-lg bg-[#8a2c5f] px-3 py-1 text-xl font-bold text-white">
-                {lang === "ar" ? "شكة" : "Shkka"}
+              <span className="text-xl font-bold text-gray-900">
+                {lang === "ar" ? "برزن" : "Barzn"}
+                <span className={`text-sm text-[#c7a86a] ${dir === "rtl" ? "mr-2" : "ml-2"}`}>
+                  Abaya
+                </span>
               </span>
             </div>
             <nav className="mt-10 space-y-6">
@@ -228,12 +231,12 @@ export default function Navbar() {
                   key={item.key}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center justify-between text-lg font-semibold text-gray-900 hover:text-[#8a2c5f] transition ${
+                  className={`flex items-center justify-between text-lg font-semibold text-gray-900 hover:text-gray-900 transition ${
                     dir === "rtl" ? "text-right" : "text-left"
                   }`}
                 >
                   <span>{item.label}</span>
-                  <span className="text-gray-400">&#8249;</span>
+                  <span className="text-gray-300">&#8249;</span>
                 </Link>
               ))}
             </nav>
