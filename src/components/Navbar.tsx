@@ -210,28 +210,30 @@ export default function Navbar() {
             } h-full w-72 bg-white text-gray-900 shadow-2xl p-6`}
           >
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-900">
-                {lang === "ar" ? "التصنيفات" : "Categories"}
-              </p>
               <button
                 type="button"
                 onClick={() => setIsMenuOpen(false)}
-                className="p-2 rounded-full border border-[#efe7da] text-gray-900 hover:bg-[#f7f4ef] transition"
+                className="p-2 text-[#8a2c5f] hover:text-[#6d1f4c] transition"
                 aria-label={lang === "ar" ? "إغلاق" : "Close"}
               >
-                <X size={18} />
+                <X size={22} />
               </button>
+              <span className="rounded-lg bg-[#8a2c5f] px-3 py-1 text-xl font-bold text-white">
+                {lang === "ar" ? "شكة" : "Shkka"}
+              </span>
             </div>
-            <nav className="mt-6 space-y-4">
+            <nav className="mt-10 space-y-6">
               {menuItems.map((item) => (
                 <Link
                   key={item.key}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center justify-between rounded-2xl border border-[#efe7da] bg-white px-4 py-3 text-sm font-semibold text-gray-900 hover:bg-[#f7f4ef] transition"
+                  className={`flex items-center justify-between text-lg font-semibold text-gray-900 hover:text-[#8a2c5f] transition ${
+                    dir === "rtl" ? "text-right" : "text-left"
+                  }`}
                 >
                   <span>{item.label}</span>
-                  <span className="text-gray-500">&#8250;</span>
+                  <span className="text-gray-400">&#8249;</span>
                 </Link>
               ))}
             </nav>
