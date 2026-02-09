@@ -200,7 +200,8 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50">
           <button
             type="button"
-            className="absolute inset-0 side-menu-overlay bg-white"
+            className="absolute inset-0 bg-white opacity-100"
+            style={{ backgroundColor: "#ffffff", opacity: 1 }}
             aria-label={lang === "ar" ? "إغلاق القائمة" : "Close menu"}
             onClick={() => setIsMenuOpen(false)}
           />
