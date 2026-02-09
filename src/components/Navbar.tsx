@@ -210,13 +210,13 @@ export default function Navbar() {
             } h-full w-72 bg-white text-gray-900 shadow-2xl p-6`}
           >
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-500">
+              <p className="text-sm font-semibold text-gray-900">
                 {lang === "ar" ? "التصنيفات" : "Categories"}
               </p>
               <button
                 type="button"
                 onClick={() => setIsMenuOpen(false)}
-                className="p-2 rounded-full border border-[#efe7da] hover:bg-[#f7f4ef] transition"
+                className="p-2 rounded-full border border-[#efe7da] text-gray-900 hover:bg-[#f7f4ef] transition"
                 aria-label={lang === "ar" ? "إغلاق" : "Close"}
               >
                 <X size={18} />
@@ -228,10 +228,10 @@ export default function Navbar() {
                   key={item.key}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center justify-between rounded-2xl border border-[#efe7da] px-4 py-3 text-sm font-semibold text-gray-900 hover:bg-[#f7f4ef] transition"
+                  className="flex items-center justify-between rounded-2xl border border-[#efe7da] bg-white px-4 py-3 text-sm font-semibold text-gray-900 hover:bg-[#f7f4ef] transition"
                 >
                   <span>{item.label}</span>
-                  <span className="text-gray-400">&#8250;</span>
+                  <span className="text-gray-500">&#8250;</span>
                 </Link>
               ))}
             </nav>
