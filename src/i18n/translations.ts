@@ -23,6 +23,31 @@ export const translations = {
         subtitle: "Signature abaya lines for every mood and moment",
         cta: "Browse abayas",
       },
+      categories: {
+        title: "All Categories",
+        subtitle: "Browse every collection in one place",
+        cta: "View categories",
+      },
+      coloredAbayas: {
+        title: "Colored Abayas",
+        subtitle: "Bold tones and modern palettes",
+        cta: "Explore colored abayas",
+      },
+      eveningAbayas: {
+        title: "Evening Abayas",
+        subtitle: "Elegant looks for special nights",
+        cta: "Shop evening styles",
+      },
+      formalAbayas: {
+        title: "Formal Abayas",
+        subtitle: "Clean cuts for professional moments",
+        cta: "Browse formal",
+      },
+      dresses: {
+        title: "Dresses",
+        subtitle: "Curated dresses for every occasion",
+        cta: "View dresses",
+      },
       fabrics: {
         title: "Fabrics",
         subtitle: "Premium textiles with soft drape and lasting comfort",
@@ -36,10 +61,10 @@ export const translations = {
     },
     adminPages: {
       title: "Top Pages Control Panel",
-      subtitle: "Edit the four top bar landing pages shown in the header.",
+      subtitle: "Edit the top navigation and category landing pages.",
       openPanel: "Open pages panel",
       sectionTitle: "Top Bar Pages",
-      sectionSubtitle: "Manage the Explore, Abayas, Fabrics, and Fast Delivery pages.",
+      sectionSubtitle: "Manage the top navigation and category pages.",
       backToAdmin: "Back to admin",
       pageLabel: "Page",
       titleEn: "Title (EN)",
@@ -340,6 +365,31 @@ export const translations = {
         subtitle: "خطوط عبايات مميزة لكل مناسبة وكل مزاج",
         cta: "تصفحي العبايات",
       },
+      categories: {
+        title: "جميع التصنيفات",
+        subtitle: "تصفحي كل المجموعات في مكان واحد",
+        cta: "عرض التصنيفات",
+      },
+      coloredAbayas: {
+        title: "عبايات ملونة",
+        subtitle: "ألوان جريئة وتدرجات عصرية",
+        cta: "استكشفي الملونة",
+      },
+      eveningAbayas: {
+        title: "عبايات سهرة",
+        subtitle: "إطلالات أنيقة للمناسبات الخاصة",
+        cta: "تسوقي السهرة",
+      },
+      formalAbayas: {
+        title: "عبايات رسمية",
+        subtitle: "قصات راقية للحضور الرسمي",
+        cta: "تصفحي الرسمية",
+      },
+      dresses: {
+        title: "فساتين",
+        subtitle: "تشكيلة فساتين لكل مناسبة",
+        cta: "شاهدي الفساتين",
+      },
       fabrics: {
         title: "أقمشة",
         subtitle: "خامات فاخرة بانسيابية ناعمة وراحة تدوم",
@@ -353,10 +403,10 @@ export const translations = {
     },
     adminPages: {
       title: "لوحة التحكم بالصفحات العلوية",
-      subtitle: "عدلي صفحات الشريط العلوي الظاهرة في الهيدر.",
+      subtitle: "عدلي صفحات التنقل العلوية وصفحات التصنيفات.",
       openPanel: "فتح لوحة الصفحات",
       sectionTitle: "صفحات الشريط العلوي",
-      sectionSubtitle: "إدارة صفحات استكشف، عبايات، أقمشة، وتوصيل سريع.",
+      sectionSubtitle: "إدارة صفحات التنقل العلوية وصفحات التصنيفات.",
       backToAdmin: "عودة للإدارة",
       pageLabel: "الصفحة",
       titleEn: "العنوان (EN)",

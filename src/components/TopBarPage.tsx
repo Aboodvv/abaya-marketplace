@@ -6,7 +6,16 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
 
-export type TopBarPageKey = "explore" | "abayas" | "fabrics" | "delivery";
+export type TopBarPageKey =
+  | "explore"
+  | "abayas"
+  | "fabrics"
+  | "delivery"
+  | "categories"
+  | "coloredAbayas"
+  | "eveningAbayas"
+  | "formalAbayas"
+  | "dresses";
 
 interface TopBarPageContent {
   title?: string;

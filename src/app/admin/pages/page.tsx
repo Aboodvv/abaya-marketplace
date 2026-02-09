@@ -32,7 +32,17 @@ const emptyForm: PageForm = {
   image: "",
 };
 
-const pageKeys: TopBarPageKey[] = ["explore", "abayas", "fabrics", "delivery"];
+const pageKeys: TopBarPageKey[] = [
+  "explore",
+  "abayas",
+  "fabrics",
+  "delivery",
+  "categories",
+  "coloredAbayas",
+  "eveningAbayas",
+  "formalAbayas",
+  "dresses",
+];
 
 export default function AdminPagesPage() {
   const { lang, t } = useLanguage();
@@ -43,6 +53,11 @@ export default function AdminPagesPage() {
     abayas: { ...emptyForm },
     fabrics: { ...emptyForm },
     delivery: { ...emptyForm },
+    categories: { ...emptyForm },
+    coloredAbayas: { ...emptyForm },
+    eveningAbayas: { ...emptyForm },
+    formalAbayas: { ...emptyForm },
+    dresses: { ...emptyForm },
   }));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
