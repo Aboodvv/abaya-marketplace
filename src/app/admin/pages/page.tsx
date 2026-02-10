@@ -88,7 +88,7 @@ export default function AdminPagesPage() {
     };
 
     load();
-  }, [isAdmin]);
+  }, [canAccess, canManagePages]);
 
   const handleChange = (key: TopBarPageKey, field: keyof PageForm, value: string) => {
     setPages((prev) => ({
