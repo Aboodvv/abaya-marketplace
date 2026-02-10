@@ -6,7 +6,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { isAdminUser } from "@/lib/admin";
+import { useAdminAccess } from "@/lib/adminAccess";
 
 interface MarketingPhraseForm {
   text: string;
@@ -44,13 +44,14 @@ const emptyForm: MarketingForm = {
 export default function AdminMarketingPage() {
   const { lang, t } = useLanguage();
   const { user, userProfile, loading: authLoading } = useAuth();
-  const isAdmin = isAdminUser(userProfile);
+  const { canAccess, loading: accessLoading, hasPermission } = useAdminAccess(userProfile);
+  const canManageMarketing = hasPermission("marketing");
   const [form, setForm] = useState<MarketingForm>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!canAccess || !canManageMarketing) return;
     const load = async () => {
       try {
         const snapshot = await getDoc(doc(db, "settings", "marketingTool"));
@@ -103,7 +104,7 @@ export default function AdminMarketingPage() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || accessLoading) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
         <p className="text-gray-600">{t.common.loading}</p>
@@ -132,7 +133,7 @@ export default function AdminMarketingPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (!canAccess || !canManageMarketing) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">

@@ -8,7 +8,31 @@ import { useNotifications } from "@/context/NotificationsContext";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2, Plus, Minus } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { collection, getDocs, limit, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+type CouponType = "percent" | "fixed";
+
+interface CouponDoc {
+  code: string;
+  type: CouponType;
+  value: number;
+  active: boolean;
+  usageLimit?: number | null;
+  usageCount?: number | null;
+  usageLimitPerCustomer?: number | null;
+  allowedProductIds?: string[] | null;
+  allowedCategories?: string[] | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+}
+
+interface AppliedCoupon {
+  code: string;
+  type: CouponType;
+  value: number;
+}
 
 export default function CartPage() {
   const { lang, t } = useLanguage();
@@ -17,10 +41,92 @@ export default function CartPage() {
   const { createNotification } = useNotifications();
   const { user, userProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
   const freeDeliveryTarget = 3;
   const remainingForFreeDelivery = Math.max(0, freeDeliveryTarget - totalItems);
   const progressPercent = Math.min(100, (totalItems / freeDeliveryTarget) * 100);
   const freeDeliveryEligible = totalItems >= freeDeliveryTarget;
+
+  const subtotal = totalPrice;
+  const discountAmount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    const rawDiscount =
+      appliedCoupon.type === "percent"
+        ? (subtotal * appliedCoupon.value) / 100
+        : appliedCoupon.value;
+    return Math.max(0, Math.min(subtotal, Number(rawDiscount)));
+  }, [appliedCoupon, subtotal]);
+  const totalAfterDiscount = Math.max(0, subtotal - discountAmount);
+
+  const resetCouponState = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  };
+
+  const normalizeList = (list?: string[] | null) =>
+    (list || [])
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean);
+
+  const validateCoupon = (coupon: CouponDoc) => {
+    if (!coupon.active) return false;
+    const now = Date.now();
+    const startsAt = coupon.startsAt ? new Date(coupon.startsAt).getTime() : null;
+    const endsAt = coupon.endsAt ? new Date(coupon.endsAt).getTime() : null;
+    if (startsAt && now < startsAt) return false;
+    if (endsAt && now > endsAt) return false;
+    if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) return false;
+    const allowedCategories = normalizeList(coupon.allowedCategories);
+    const allowedProductIds = normalizeList(coupon.allowedProductIds);
+    if (allowedCategories.length > 0 || allowedProductIds.length > 0) {
+      const hasEligibleItem = cart.some((item) => {
+        const category = item.category ? item.category.toLowerCase() : "";
+        return (
+          (allowedProductIds.length > 0 && allowedProductIds.includes(item.id.toLowerCase())) ||
+          (allowedCategories.length > 0 && allowedCategories.includes(category))
+        );
+      });
+      if (!hasEligibleItem) return false;
+    }
+    return true;
+  };
+
+  const handleApplyCoupon = async () => {
+    const normalized = couponCode.trim().toUpperCase();
+    if (!normalized) {
+      setCouponError(t.cart.couponEmpty);
+      return;
+    }
+    setCouponLoading(true);
+    setCouponError("");
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, "coupons"), where("code", "==", normalized), limit(1))
+      );
+      if (snapshot.empty) {
+        setCouponError(t.cart.couponInvalid);
+        setAppliedCoupon(null);
+        return;
+      }
+      const data = snapshot.docs[0].data() as CouponDoc;
+      if (!validateCoupon(data)) {
+        setCouponError(t.cart.couponInvalid);
+        setAppliedCoupon(null);
+        return;
+      }
+      setAppliedCoupon({ code: data.code, type: data.type, value: data.value });
+      setCouponCode(data.code);
+    } catch (error) {
+      console.error("Failed to validate coupon", error);
+      setCouponError(t.cart.couponError);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handleCheckout = async () => {
     setLoading(true);
@@ -28,7 +134,11 @@ export default function CartPage() {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: cart }),
+        body: JSON.stringify({
+          items: cart,
+          couponCode: appliedCoupon?.code || null,
+          userId: user?.uid || null,
+        }),
       });
 
       const { url } = await response.json();
@@ -36,7 +146,11 @@ export default function CartPage() {
         const orderId = await createOrder({
           userId: user.uid,
           items: cart,
-          total: totalPrice,
+          total: totalAfterDiscount,
+          subtotal,
+          discountAmount,
+          couponCode: appliedCoupon?.code || null,
+          totalAfterDiscount,
           freeDeliveryEligible,
           freeDeliveryThreshold: freeDeliveryTarget,
         });
@@ -46,8 +160,8 @@ export default function CartPage() {
           title: lang === "ar" ? "تم إنشاء طلبك" : "Order Created",
           body:
             lang === "ar"
-              ? `تم إنشاء طلب جديد بقيمة $${totalPrice.toFixed(2)}`
-              : `A new order has been created for $${totalPrice.toFixed(2)}`,
+              ? `تم إنشاء طلب جديد بقيمة $${totalAfterDiscount.toFixed(2)}`
+              : `A new order has been created for $${totalAfterDiscount.toFixed(2)}`,
         });
 
         if (user.email) {
@@ -62,8 +176,8 @@ export default function CartPage() {
                   : "Order confirmation",
               html:
                 lang === "ar"
-                  ? `<p>مرحبًا ${userProfile?.name || ""}</p><p>تم إنشاء طلبك بنجاح.</p><p>رقم الطلب: ${orderId}</p><p>المجموع: $${totalPrice.toFixed(2)}</p>`
-                  : `<p>Hello ${userProfile?.name || ""}</p><p>Your order has been created successfully.</p><p>Order ID: ${orderId}</p><p>Total: $${totalPrice.toFixed(2)}</p>`,
+                  ? `<p>مرحبًا ${userProfile?.name || ""}</p><p>تم إنشاء طلبك بنجاح.</p><p>رقم الطلب: ${orderId}</p><p>الإجمالي: $${totalAfterDiscount.toFixed(2)}</p>`
+                  : `<p>Hello ${userProfile?.name || ""}</p><p>Your order has been created successfully.</p><p>Order ID: ${orderId}</p><p>Total: $${totalAfterDiscount.toFixed(2)}</p>`,
             }),
           });
         }
@@ -186,9 +300,60 @@ export default function CartPage() {
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
-          <div className="flex justify-between items-center text-2xl font-bold mb-6">
-            <span>{t.cart.total}:</span>
-            <span className="text-gray-900">${totalPrice.toFixed(2)}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <p className="text-sm text-gray-600">{t.cart.couponTitle}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <input
+                  value={couponCode}
+                  onChange={(event) => setCouponCode(event.target.value)}
+                  placeholder={t.cart.couponPlaceholder}
+                  className="border border-[#efe7da] rounded-full px-4 py-2"
+                />
+                {appliedCoupon ? (
+                  <button
+                    type="button"
+                    onClick={resetCouponState}
+                    className="px-4 py-2 rounded-full bg-[#f7f4ef] hover:bg-[#efe7da]"
+                  >
+                    {t.cart.couponRemove}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading}
+                    className={`px-4 py-2 rounded-full font-semibold ${
+                      couponLoading
+                        ? "bg-gray-300"
+                        : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
+                    }`}
+                  >
+                    {couponLoading ? t.common.loading : t.cart.couponApply}
+                  </button>
+                )}
+              </div>
+              {couponError && <p className="text-sm text-red-600 mt-2">{couponError}</p>}
+              {appliedCoupon && !couponError && (
+                <p className="text-sm text-[#7a5a1f] mt-2">
+                  {t.cart.couponApplied.replace("{code}", appliedCoupon.code)}
+                </p>
+              )}
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600">{t.cart.subtotal}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                ${subtotal.toFixed(2)}
+              </p>
+              {discountAmount > 0 && (
+                <p className="text-sm text-[#7a5a1f]">
+                  {t.cart.discount}: -${discountAmount.toFixed(2)}
+                </p>
+              )}
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                {t.cart.total}: ${totalAfterDiscount.toFixed(2)}
+              </p>
+            </div>
           </div>
           {freeDeliveryEligible && (
             <div className="mb-4 rounded-2xl border border-[#efe7da] bg-[#f7f4ef] px-4 py-3 text-sm text-gray-700">

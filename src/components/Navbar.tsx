@@ -10,7 +10,7 @@ import { useNotifications } from "@/context/NotificationsContext";
 import { ShoppingCart, LogOut, User, Bell, Search, Menu, X } from "lucide-react";
 
 export default function Navbar() {
-  const { lang, setLang, t, dir } = useLanguage();
+  const { lang, t, dir } = useLanguage();
   const { totalItems } = useCart();
   const { user, userProfile, hasSession, logout, loading } = useAuth();
   const { unreadCount, loadNotifications } = useNotifications();
@@ -28,19 +28,20 @@ export default function Navbar() {
     { key: "delivery", href: "/delivery", label: t.topbar.fastDelivery },
   ];
   const menuItems = [
+    { key: "products", href: "/products", label: t.nav.products },
     { key: "categories", href: "/categories", label: t.topPages.categories.title },
     { key: "colored", href: "/abayas-colored", label: t.topPages.coloredAbayas.title },
     { key: "evening", href: "/abayas-evening", label: t.topPages.eveningAbayas.title },
     { key: "formal", href: "/abayas-formal", label: t.topPages.formalAbayas.title },
     { key: "dresses", href: "/dresses", label: t.topPages.dresses.title },
     { key: "fabrics", href: "/fabrics", label: t.topPages.fabrics.title },
+    { key: "seller", href: "/seller/login", label: t.nav.seller },
     { key: "cart", href: "/cart", label: t.nav.cart },
     { key: "account", href: accountHref, label: t.nav.account },
   ];
-
-  const toggleLang = () => {
-    setLang(lang === "en" ? "ar" : "en");
-  };
+  if (isAdmin) {
+    menuItems.push({ key: "admin", href: "/admin", label: t.nav.admin });
+  }
 
   const handleLogout = async () => {
     await logout();
@@ -55,64 +56,8 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0b0b0b]/90 text-white backdrop-blur">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          className={`flex justify-between items-center h-16 ${
-            dir === "rtl" ? "flex-row-reverse" : ""
-          }`}
-        >
-          <div
-            className={`flex items-center gap-8 ${dir === "rtl" ? "flex-row-reverse" : ""}`}
-          >
-            <Link href="/" className="text-2xl font-bold tracking-wide">
-              {lang === "ar" ? "برزن" : "Barzn"}
-              <span
-                className={`text-sm text-[#c7a86a] ${dir === "rtl" ? "mr-2" : "ml-2"}`}
-              >
-                Abaya
-              </span>
-            </Link>
-            <div
-              className={`hidden md:flex gap-6 text-sm font-semibold ${dir === "rtl" ? "flex-row-reverse" : ""}`}
-            >
-              <Link href="/" className="hover:text-[#c7a86a] transition">
-                {t.nav.home}
-              </Link>
-              <Link href="/products" className="hover:text-[#c7a86a] transition">
-                {t.nav.products}
-              </Link>
-              <Link href="/seller/login" className="hover:text-[#c7a86a] transition">
-                {t.nav.seller}
-              </Link>
-              {isAdmin && (
-                <Link href="/admin" className="hover:text-[#c7a86a] transition">
-                  {t.nav.admin}
-                </Link>
-              )}
-              <Link
-                href="/cart"
-                className="hover:text-[#c7a86a] transition flex items-center gap-2"
-              >
-                <ShoppingCart size={18} />
-                {t.nav.cart}
-                {totalItems > 0 && (
-                  <span className="bg-[#c7a86a] text-black rounded-full px-2 py-0.5 text-xs">
-                    {totalItems}
-                  </span>
-                )}
-              </Link>
-            </div>
-          </div>
-
-          <div
-            className={`flex items-center gap-3 ${dir === "rtl" ? "flex-row-reverse" : ""}`}
-          >
-            <Link
-              href="/products"
-              aria-label={lang === "ar" ? "بحث" : "Search"}
-              className="p-2 rounded-full border border-white/10 hover:border-[#c7a86a] transition"
-            >
-              <Search size={18} />
-            </Link>
+        <div className="grid h-16 grid-cols-3 items-center">
+          <div className={`flex items-center gap-3 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
             <button
               type="button"
               onClick={() => setIsMenuOpen(true)}
@@ -121,20 +66,45 @@ export default function Navbar() {
             >
               <Menu size={18} />
             </button>
-            <button
-              onClick={toggleLang}
-              className="px-3 py-1.5 border border-[#c7a86a] text-[#c7a86a] rounded-full hover:bg-[#c7a86a] hover:text-black transition text-sm"
+            <Link
+              href="/products"
+              aria-label={lang === "ar" ? "بحث" : "Search"}
+              className="p-2 rounded-full border border-white/10 hover:border-[#c7a86a] transition"
             >
-              {lang === "en" ? "العربية" : "English"}
-            </button>
+              <Search size={18} />
+            </Link>
+          </div>
+
+          <div className="flex justify-center">
+            <Link href="/" className="text-2xl font-bold tracking-wide">
+              {lang === "ar" ? "برزن" : "Barzn"}
+              <span
+                className={`text-sm text-[#c7a86a] ${dir === "rtl" ? "mr-2" : "ml-2"}`}
+              >
+                Abaya
+              </span>
+            </Link>
+          </div>
+
+          <div className={`flex items-center justify-end gap-2 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
+            <Link
+              href="/cart"
+              aria-label={t.nav.cart}
+              className="relative p-2 rounded-full border border-white/10 hover:border-[#c7a86a] transition"
+            >
+              <ShoppingCart size={18} />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#c7a86a] text-black rounded-full px-2 py-0.5 text-xs">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
 
             {hasSession || user ? (
-              <div
-                className={`flex items-center gap-2 ${dir === "rtl" ? "flex-row-reverse" : ""}`}
-              >
+              <div className={`flex items-center gap-2 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
                 <Link
                   href="/notifications"
-                  className="relative px-3 py-2 border border-white/10 rounded-full hover:border-[#c7a86a] transition"
+                  className="relative p-2 border border-white/10 rounded-full hover:border-[#c7a86a] transition"
                 >
                   <Bell size={18} />
                   {unreadCount > 0 && (
@@ -144,14 +114,8 @@ export default function Navbar() {
                   )}
                 </Link>
                 <Link
-                  href="/orders"
-                  className="px-4 py-2 border border-white/10 rounded-full hover:border-[#c7a86a] transition text-sm"
-                >
-                  {t.orders.title}
-                </Link>
-                <Link
                   href="/profile"
-                  className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-full hover:border-[#c7a86a] transition text-sm"
+                  className="flex items-center gap-2 px-3 py-2 border border-white/10 rounded-full hover:border-[#c7a86a] transition text-sm"
                 >
                   <User size={18} />
                   <span className="hidden sm:inline">
@@ -160,7 +124,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#c7a86a] text-black rounded-full hover:bg-[#b59659] transition"
+                  className="flex items-center gap-2 px-3 py-2 bg-[#c7a86a] text-black rounded-full hover:bg-[#b59659] transition"
                 >
                   <LogOut size={18} />
                 </button>

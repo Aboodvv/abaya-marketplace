@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function rolesDoc() {
+      return get(/databases/$(database)/documents/adminRoles/$(request.auth.token.email));
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && rolesDoc().data.roles.hasAny([role, "owner"]);
+    }
+
+    function isOwner() {
+      return isSignedIn() && rolesDoc().data.roles.hasAny(["owner"]);
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if hasRole("products");
+    }
+
+    match /pages/{pageId} {
+      allow read: if true;
+      allow write: if hasRole("pages");
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if hasRole("marketing") || hasRole("pages") || hasRole("banners") || hasRole("shipping");
+    }
+
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if hasRole("coupons");
+    }
+
+    match /couponUsage/{usageId} {
+      allow read: if isSignedIn() && (
+        hasRole("coupons") || resource.data.userId == request.auth.uid
+      );
+      allow write: if isSignedIn() && (
+        hasRole("coupons") || request.resource.data.userId == request.auth.uid
+      );
+    }
+
+    match /orders/{orderId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || hasRole("orders")
+      );
+      allow update, delete: if hasRole("orders");
+    }
+
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && (
+        request.auth.uid == userId || hasRole("customers")
+      );
+    }
+
+    match /sellers/{sellerId} {
+      allow read, write: if isSignedIn() && (
+        request.auth.uid == sellerId || hasRole("sellers")
+      );
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow create: if isSignedIn() && request.resource.data.sellerId == request.auth.uid;
+      allow read: if isSignedIn() && (
+        resource.data.sellerId == request.auth.uid || hasRole("withdrawals")
+      );
+      allow update, delete: if hasRole("withdrawals");
+    }
+
+    match /notifications/{notificationId} {
+      allow read, write: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || request.resource.data.userId == request.auth.uid
+      );
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    match /adminRoles/{email} {
+      allow read: if isSignedIn() && request.auth.token.email == email;
+      allow write: if hasRole("roles") || isOwner();
+    }
+  }
+}

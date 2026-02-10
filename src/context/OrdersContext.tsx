@@ -26,6 +26,10 @@ export interface Order {
   userId: string;
   items: OrderItem[];
   total: number;
+  subtotal?: number;
+  discountAmount?: number;
+  couponCode?: string | null;
+  totalAfterDiscount?: number;
   status: "pending" | "paid" | "cancelled";
   createdAt: string;
   stripeSessionId?: string;
@@ -38,6 +42,10 @@ interface OrdersContextType {
     userId: string;
     items: CartItem[];
     total: number;
+    subtotal?: number;
+    discountAmount?: number;
+    couponCode?: string | null;
+    totalAfterDiscount?: number;
     stripeSessionId?: string;
     freeDeliveryEligible?: boolean;
     freeDeliveryThreshold?: number;
@@ -52,6 +60,10 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
     userId: string;
     items: CartItem[];
     total: number;
+    subtotal?: number;
+    discountAmount?: number;
+    couponCode?: string | null;
+    totalAfterDiscount?: number;
     stripeSessionId?: string;
     freeDeliveryEligible?: boolean;
     freeDeliveryThreshold?: number;
@@ -67,6 +79,10 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
         quantity: item.quantity,
       })),
       total: params.total,
+      subtotal: params.subtotal ?? params.total,
+      discountAmount: params.discountAmount ?? 0,
+      couponCode: params.couponCode || null,
+      totalAfterDiscount: params.totalAfterDiscount ?? params.total,
       status: "pending" as const,
       createdAt: new Date().toISOString(),
       stripeSessionId: params.stripeSessionId || null,

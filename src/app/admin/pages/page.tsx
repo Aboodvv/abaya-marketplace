@@ -6,7 +6,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { isAdminUser } from "@/lib/admin";
+import { useAdminAccess } from "@/lib/adminAccess";
 import { translations } from "@/i18n/translations";
 import type { TopBarPageKey } from "@/components/TopBarPage";
 
@@ -47,7 +47,8 @@ const pageKeys: TopBarPageKey[] = [
 export default function AdminPagesPage() {
   const { lang, t } = useLanguage();
   const { user, userProfile, loading: authLoading } = useAuth();
-  const isAdmin = isAdminUser(userProfile);
+  const { canAccess, loading: accessLoading, hasPermission } = useAdminAccess(userProfile);
+  const canManagePages = hasPermission("pages");
   const [pages, setPages] = useState<Record<TopBarPageKey, PageForm>>(() => ({
     explore: { ...emptyForm },
     abayas: { ...emptyForm },
@@ -63,7 +64,7 @@ export default function AdminPagesPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!canAccess || !canManagePages) return;
     const load = async () => {
       try {
         const entries = await Promise.all(
@@ -126,7 +127,7 @@ export default function AdminPagesPage() {
     []
   );
 
-  if (authLoading) {
+  if (authLoading || accessLoading) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
         <p className="text-gray-600">{t.common.loading}</p>
@@ -155,7 +156,7 @@ export default function AdminPagesPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (!canAccess || !canManagePages) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">

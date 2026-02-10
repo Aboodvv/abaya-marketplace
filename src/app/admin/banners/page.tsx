@@ -6,7 +6,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { isAdminUser } from "@/lib/admin";
+import { useAdminAccess } from "@/lib/adminAccess";
 
 const defaultAdImages = [
   "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop",
@@ -56,7 +56,8 @@ const defaultAdItems = [
 export default function AdminBannersPage() {
   const { lang } = useLanguage();
   const { user, userProfile, loading: authLoading } = useAuth();
-  const isAdmin = isAdminUser(userProfile);
+  const { canAccess, loading: accessLoading, hasPermission } = useAdminAccess(userProfile);
+  const canManageBanners = hasPermission("banners");
   const [adImages, setAdImages] = useState<string[]>(defaultAdImages);
   const [adItems, setAdItems] = useState(defaultAdItems);
   const [bookingLink, setBookingLink] = useState("https://iwtsp.com/966550514533");
@@ -64,7 +65,7 @@ export default function AdminBannersPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!canAccess || !canManageBanners) return;
     const load = async () => {
       try {
         const snapshot = await getDoc(doc(db, "settings", "homeAds"));
@@ -99,9 +100,9 @@ export default function AdminBannersPage() {
     };
 
     load();
-  }, [isAdmin]);
+  }, [canAccess, canManageBanners]);
 
-  if (authLoading) {
+  if (authLoading || accessLoading) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
         <p className="text-gray-600">{lang === "ar" ? "جاري التحميل..." : "Loading..."}</p>
@@ -130,7 +131,7 @@ export default function AdminBannersPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (!canAccess || !canManageBanners) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">

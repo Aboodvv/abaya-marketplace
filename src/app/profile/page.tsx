@@ -3,7 +3,6 @@
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Bell,
@@ -18,8 +17,7 @@ import {
 
 export default function ProfilePage() {
   const { user, userProfile, updateProfile, loading: authLoading } = useAuth();
-  const { lang, t } = useLanguage();
-  const router = useRouter();
+  const { lang, t, setLang } = useLanguage();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -125,6 +123,10 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleLang = () => {
+    setLang(lang === "en" ? "ar" : "en");
   };
 
   return (
@@ -328,6 +330,18 @@ export default function ProfilePage() {
               </div>
             </form>
           )}
+        </div>
+
+        <div className="mt-8 bg-white rounded-3xl border border-[#efe7da] p-6 shadow-lg">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            {t.profile.languageTitle}
+          </h2>
+          <button
+            onClick={toggleLang}
+            className="inline-flex items-center gap-2 rounded-full border border-[#c7a86a] px-5 py-2 text-sm font-semibold text-[#7a5a1f] hover:bg-[#c7a86a] hover:text-black transition"
+          >
+            {lang === "en" ? t.profile.languageArabic : t.profile.languageEnglish}
+          </button>
         </div>
       </div>
     </div>
