@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   query,
   where,
@@ -14,6 +17,18 @@ import { db } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSeller } from "@/context/SellerContext";
 import { Product } from "@/context/CartContext";
+import {
+  Menu,
+  X,
+  Home,
+  ShoppingBag,
+  Package,
+  BarChart3,
+  Settings,
+  LogOut,
+  Trash2,
+  Edit2,
+} from "lucide-react";
 
 interface SellerOrderItem {
   sellerId?: string;
@@ -25,6 +40,7 @@ interface SellerOrder {
   id: string;
   items: SellerOrderItem[];
   total: number;
+  status?: string;
   createdAt: string;
 }
 
@@ -35,27 +51,23 @@ interface Withdrawal {
   createdAt: string;
 }
 
+type NavTab = "overview" | "orders" | "products" | "withdrawals" | "settings" | "analytics";
+
 export default function SellerDashboardPage() {
   const { t, lang } = useLanguage();
+  const router = useRouter();
   const { sellerUser, sellerProfile, loading: sellerLoading, logoutSeller } = useSeller();
+  const [activeTab, setActiveTab] = useState<NavTab>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<SellerOrder[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
-  const [form, setForm] = useState({
-    name: "",
-    nameAr: "",
-    price: "",
-    image: "",
-    description: "",
-    descriptionAr: "",
-    category: "",
-    categoryAr: "",
-    inStock: true,
-  });
-  const [savingProduct, setSavingProduct] = useState(false);
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [savingWithdraw, setSavingWithdraw] = useState(false);
 
+  // تحميل المنتجات
   useEffect(() => {
     if (!sellerUser) return;
     const loadProducts = async () => {
@@ -70,6 +82,7 @@ export default function SellerDashboardPage() {
     loadProducts();
   }, [sellerUser]);
 
+  // تحميل الطلبات
   useEffect(() => {
     if (!sellerUser) return;
     const loadOrders = async () => {
@@ -79,23 +92,27 @@ export default function SellerDashboardPage() {
           id: docSnap.id,
           ...(docSnap.data() as Omit<SellerOrder, "id">),
         }))
-        .filter((order) =>
-          order.items?.some((item) => item.sellerId === sellerUser.uid)
-        );
+        .filter((order) => order.items?.some((item) => item.sellerId === sellerUser.uid))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setOrders(list as SellerOrder[]);
     };
+    loadOrders();
+  }, [sellerUser]);
 
+  // تحميل السحوبات
+  useEffect(() => {
+    if (!sellerUser) return;
     const loadWithdrawals = async () => {
       const q = query(collection(db, "withdrawals"), where("sellerId", "==", sellerUser.uid));
       const snapshot = await getDocs(q);
-      const list = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() as Omit<Withdrawal, "id">),
-      }));
+      const list = snapshot.docs
+        .map((docSnap) => ({
+          id: docSnap.id,
+          ...(docSnap.data() as Omit<Withdrawal, "id">),
+        }))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setWithdrawals(list as Withdrawal[]);
     };
-
-    loadOrders();
     loadWithdrawals();
   }, [sellerUser]);
 
@@ -111,77 +128,84 @@ export default function SellerDashboardPage() {
     }, 0);
   }, [orders, sellerUser]);
 
+  const totalItems = useMemo(
+    () => orders.reduce((sum, order) => sum + order.items.length, 0),
+    [orders]
+  );
+
+  const pendingOrders = useMemo(
+    () => orders.filter((o) => o.status === "pending" || !o.status).length,
+    [orders]
+  );
+
+  const completedOrders = useMemo(
+    () => orders.filter((o) => o.status === "completed").length,
+    [orders]
+  );
+
+  const averageOrderValue = useMemo(
+    () => (orders.length > 0 ? totalSales / orders.length : 0),
+    [totalSales, orders.length]
+  );
+
   const withdrawnTotal = useMemo(
     () => withdrawals.reduce((sum, item) => sum + Number(item.amount || 0), 0),
     [withdrawals]
   );
+
   const availableBalance = Math.max(0, totalSales - withdrawnTotal);
 
-  const handleProductChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }));
-  };
+  const filteredOrders = useMemo(() => {
+    if (orderStatusFilter === "all") return orders;
+    return orders.filter((o) => (o.status || "pending") === orderStatusFilter);
+  }, [orders, orderStatusFilter]);
 
-  const handleAddProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!sellerUser || !sellerProfile) return;
-    setSavingProduct(true);
-    await addDoc(collection(db, "products"), {
-      ...form,
-      price: Number(form.price),
-      sellerId: sellerUser.uid,
-      sellerName: sellerProfile.name,
-      storeName: sellerProfile.storeName,
-      createdAt: new Date().toISOString(),
-    });
-    setForm({
-      name: "",
-      nameAr: "",
-      price: "",
-      image: "",
-      description: "",
-      descriptionAr: "",
-      category: "",
-      categoryAr: "",
-      inStock: true,
-    });
-    setSavingProduct(false);
-    const q = query(collection(db, "products"), where("sellerId", "==", sellerUser.uid));
-    const snapshot = await getDocs(q);
-    const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...(docSnap.data() as Omit<Product, "id">),
-    }));
-    setProducts(list);
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteDoc(doc(db, "products", productId));
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      setDeleteConfirm(null);
+    } catch (error) {
+      console.error("خطأ في حذف المنتج:", error);
+    }
   };
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sellerUser) return;
     const amount = Number(withdrawAmount);
-    if (!amount || amount <= 0) return;
+    if (!amount || amount <= 0 || amount > availableBalance) return;
     setSavingWithdraw(true);
-    await addDoc(collection(db, "withdrawals"), {
-      sellerId: sellerUser.uid,
-      amount,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    });
-    setWithdrawAmount("");
-    setSavingWithdraw(false);
-    const snapshot = await getDocs(
-      query(collection(db, "withdrawals"), where("sellerId", "==", sellerUser.uid))
-    );
-    const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...(docSnap.data() as Omit<Withdrawal, "id">),
-    }));
-    setWithdrawals(list as Withdrawal[]);
+    try {
+      await addDoc(collection(db, "withdrawals"), {
+        sellerId: sellerUser.uid,
+        amount,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      });
+      setWithdrawAmount("");
+      const snapshot = await getDocs(
+        query(collection(db, "withdrawals"), where("sellerId", "==", sellerUser.uid))
+      );
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Withdrawal, "id">),
+      }));
+      setWithdrawals(list as Withdrawal[]);
+    } catch (error) {
+      console.error("خطأ في السحب:", error);
+    } finally {
+      setSavingWithdraw(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutSeller();
+      router.push("/seller/login");
+    } catch (error) {
+      console.error("خطأ في تسجيل الخروج:", error);
+    }
   };
 
   if (sellerLoading) {
@@ -195,20 +219,20 @@ export default function SellerDashboardPage() {
   if (!sellerUser || !sellerProfile) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             {lang === "ar" ? "يجب تسجيل الدخول كبائع" : "Please login as seller"}
           </h1>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col gap-3">
             <Link
               href="/seller/login"
-              className="px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold"
+              className="px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
             >
               {t.seller.login}
             </Link>
             <Link
               href="/seller/register"
-              className="px-6 py-3 rounded-full border border-[#c7a86a] text-[#7a5a1f] font-semibold"
+              className="px-6 py-3 rounded-full border border-[#c7a86a] text-[#7a5a1f] font-semibold hover:bg-[#f7f4ef] transition"
             >
               {t.seller.register}
             </Link>
@@ -219,197 +243,133 @@ export default function SellerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f4ef] py-10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">{t.seller.dashboard}</h1>
-            <p className="text-gray-600 mt-2">{sellerProfile.storeName}</p>
+    <div className={`flex h-screen bg-[#f7f4ef] ${lang === "ar" ? "flex-row-reverse" : ""}`}>
+      {/* الشريط الجانبي */}
+      <div
+        className={`fixed ${
+          lang === "ar" ? "right-0" : "left-0"
+        } top-0 h-screen w-64 bg-white border-l border-[#efe7da] shadow-lg transform transition-transform duration-300 z-50 ${
+          sidebarOpen ? "translate-x-0" : lang === "ar" ? "translate-x-64" : "-translate-x-64"
+        } md:relative md:translate-x-0`}
+      >
+        <div className="p-6 flex flex-col h-full">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-bold text-gray-900">
+              {lang === "ar" ? "البائع" : "Seller"}
+            </h2>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden text-gray-600 hover:text-gray-900"
+            >
+              <X size={22} />
+            </button>
           </div>
+
+          {/* معلومات المتجر */}
+          <div className="bg-[#f7f4ef] rounded-2xl p-4 mb-6">
+            <p className="text-sm font-semibold text-gray-900">{sellerProfile.storeName}</p>
+            <p className="text-xs text-gray-600">{sellerProfile.storeCategory}</p>
+          </div>
+
+          {/* قائمة التنقل */}
+          <nav className="space-y-2 flex-1">
+            {[
+              { id: "overview" as NavTab, label: t.seller.overview, icon: Home },
+              { id: "orders" as NavTab, label: t.seller.ordersManagement, icon: ShoppingBag },
+              { id: "products" as NavTab, label: t.seller.productsManagement, icon: Package },
+              { id: "withdrawals" as NavTab, label: t.seller.withdrawals, icon: BarChart3 },
+              { id: "analytics" as NavTab, label: t.seller.analytics, icon: BarChart3 },
+              { id: "settings" as NavTab, label: t.seller.settings, icon: Settings },
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => {
+                  setActiveTab(id);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                  activeTab === id
+                    ? "bg-[#c7a86a] text-black font-semibold"
+                    : "text-gray-700 hover:bg-[#f7f4ef]"
+                }`}
+              >
+                <Icon size={20} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* زر الخروج */}
           <button
-            onClick={logoutSeller}
-            className="px-5 py-2 rounded-full border border-[#c7a86a] text-[#c7a86a] hover:bg-[#c7a86a] hover:text-black transition"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition"
           >
-            {lang === "ar" ? "تسجيل الخروج" : "Logout"}
+            <LogOut size={20} />
+            <span>{lang === "ar" ? "تسجيل الخروج" : "Logout"}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* المحتوى الرئيسي */}
+      <div className="flex-1 overflow-auto">
+        {/* رأس الصفحة */}
+        <div className="bg-white border-b border-[#efe7da] sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {activeTab === "overview" && t.seller.overview}
+            {activeTab === "orders" && t.seller.ordersManagement}
+            {activeTab === "products" && t.seller.productsManagement}
+            {activeTab === "withdrawals" && t.seller.withdrawals}
+            {activeTab === "analytics" && t.seller.analytics}
+            {activeTab === "settings" && t.seller.settings}
+          </h1>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden text-gray-600 hover:text-gray-900"
+          >
+            <Menu size={24} />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
-            <p className="text-sm text-gray-500">{t.seller.totalSales}</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">${totalSales.toFixed(2)}</p>
-          </div>
-          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
-            <p className="text-sm text-gray-500">{t.seller.orders}</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">{orders.length}</p>
-          </div>
-          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
-            <p className="text-sm text-gray-500">{t.seller.availableBalance}</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">${availableBalance.toFixed(2)}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.addProduct}</h2>
-            <form onSubmit={handleAddProduct} className="space-y-4">
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleProductChange}
-                placeholder={lang === "ar" ? "الاسم (EN)" : "Name (EN)"}
-                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                required
-              />
-              <input
-                name="nameAr"
-                value={form.nameAr}
-                onChange={handleProductChange}
-                placeholder={lang === "ar" ? "الاسم (AR)" : "Name (AR)"}
-                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                required
-              />
-              <input
-                name="price"
-                type="number"
-                min="0"
-                value={form.price}
-                onChange={handleProductChange}
-                placeholder={t.admin.price}
-                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                required
-              />
-              <input
-                name="image"
-                value={form.image}
-                onChange={handleProductChange}
-                placeholder={t.admin.image}
-                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                required
-              />
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleProductChange}
-                placeholder={t.admin.descriptionEn}
-                className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
-                rows={2}
-              />
-              <textarea
-                name="descriptionAr"
-                value={form.descriptionAr}
-                onChange={handleProductChange}
-                placeholder={t.admin.descriptionAr}
-                className="w-full border border-[#efe7da] rounded-3xl px-4 py-3"
-                rows={2}
-              />
-              <input
-                name="category"
-                value={form.category}
-                onChange={handleProductChange}
-                placeholder={t.admin.categoryEn}
-                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                required
-              />
-              <input
-                name="categoryAr"
-                value={form.categoryAr}
-                onChange={handleProductChange}
-                placeholder={t.admin.categoryAr}
-                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                required
-              />
-              <label className="flex items-center gap-2 text-gray-700">
-                <input
-                  type="checkbox"
-                  name="inStock"
-                  checked={form.inStock}
-                  onChange={handleProductChange}
-                />
-                {t.admin.inStock}
-              </label>
-              <button
-                type="submit"
-                disabled={savingProduct}
-                className={`w-full py-3 rounded-full font-semibold transition ${
-                  savingProduct ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
-                }`}
-              >
-                {savingProduct ? t.common.loading : t.seller.addProduct}
-              </button>
-            </form>
-          </div>
-
-          <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.wallet}</h2>
-            <div className="space-y-3 mb-6">
-              <p className="text-gray-600">
-                {t.seller.totalSales}: <span className="font-semibold">${totalSales.toFixed(2)}</span>
-              </p>
-              <p className="text-gray-600">
-                {t.seller.availableBalance}:{" "}
-                <span className="font-semibold">${availableBalance.toFixed(2)}</span>
-              </p>
-            </div>
-            <form onSubmit={handleWithdraw} className="space-y-4">
-              <input
-                type="number"
-                min="0"
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
-                placeholder={lang === "ar" ? "مبلغ السحب" : "Withdraw amount"}
-                className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-                required
-              />
-              <button
-                type="submit"
-                disabled={savingWithdraw}
-                className={`w-full py-3 rounded-full font-semibold transition ${
-                  savingWithdraw ? "bg-gray-300" : "bg-[#c7a86a] text-black hover:bg-[#b59659]"
-                }`}
-              >
-                {savingWithdraw ? t.common.loading : t.seller.withdraw}
-              </button>
-            </form>
-            <div className="mt-6 space-y-3">
-              {withdrawals.map((item) => (
-                <div key={item.id} className="flex items-center justify-between text-sm text-gray-600">
-                  <span>${Number(item.amount).toFixed(2)}</span>
-                  <span>{item.status}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl shadow-xl p-6 border border-[#efe7da]">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.seller.myProducts}</h2>
-          {products.length === 0 ? (
-            <p className="text-gray-600">{lang === "ar" ? "لا توجد منتجات بعد" : "No products yet"}</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <div key={product.id} className="border border-[#efe7da] rounded-2xl overflow-hidden">
-                  <div className="relative h-40">
-                    <Image
-                      src={product.image}
-                      alt={lang === "ar" ? product.nameAr : product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900">
-                      {lang === "ar" ? product.nameAr : product.name}
-                    </h3>
-                    <p className="text-sm text-gray-600">${product.price}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* محتوى الصفحات - يتم إضافة الأقسام هنا */}
+        <div className="p-6">
+          {activeTab === "overview" && <div>Coming soon...</div>}
+          {activeTab === "orders" && <div>Coming soon...</div>}
+          {activeTab === "products" && <div>Coming soon...</div>}
+          {activeTab === "withdrawals" && <div>Coming soon...</div>}
+          {activeTab === "analytics" && <div>Coming soon...</div>}
+          {activeTab === "settings" && <div>Coming soon...</div>}
         </div>
       </div>
+
+      {/* نافذة تأكيد الحذف */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm border border-[#efe7da] shadow-lg">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              {lang === "ar" ? "تأكيد الحذف" : "Confirm Delete"}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {lang === "ar"
+                ? "هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء."
+                : "Are you sure you want to delete this product? This action cannot be undone."}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 border border-[#efe7da] rounded-lg text-gray-900 font-semibold hover:bg-[#f7f4ef] transition"
+              >
+                {lang === "ar" ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                onClick={() => handleDeleteProduct(deleteConfirm)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+              >
+                {lang === "ar" ? "حذف" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
