@@ -330,14 +330,436 @@ export default function SellerDashboardPage() {
           </button>
         </div>
 
-        {/* محتوى الصفحات - يتم إضافة الأقسام هنا */}
+        {/* محتوى الصفحات */}
         <div className="p-6">
-          {activeTab === "overview" && <div>Coming soon...</div>}
-          {activeTab === "orders" && <div>Coming soon...</div>}
-          {activeTab === "products" && <div>Coming soon...</div>}
-          {activeTab === "withdrawals" && <div>Coming soon...</div>}
-          {activeTab === "analytics" && <div>Coming soon...</div>}
-          {activeTab === "settings" && <div>Coming soon...</div>}
+          {/* نظرة عامة */}
+          {activeTab === "overview" && (
+            <div className="space-y-6">
+              {/* بطاقات الملخص */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da] shadow-sm">
+                  <p className="text-sm text-gray-600">{t.seller.totalSales}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">${totalSales.toFixed(2)}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da] shadow-sm">
+                  <p className="text-sm text-gray-600">{t.seller.orders}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{orders.length}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da] shadow-sm">
+                  <p className="text-sm text-gray-600">{t.seller.availableBalance}</p>
+                  <p className="text-3xl font-bold text-[#c7a86a] mt-2">${availableBalance.toFixed(2)}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da] shadow-sm">
+                  <p className="text-sm text-gray-600">{t.seller.totalItems}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{totalItems}</p>
+                </div>
+              </div>
+
+              {/* آخر الطلبات والمنتجات */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* آخر الطلبات */}
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                  <h2 className="text-lg font-bold text-gray-900 mb-4">{t.seller.recentOrders}</h2>
+                  {filteredOrders.slice(0, 5).length === 0 ? (
+                    <p className="text-gray-600">{t.seller.noOrders}</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {filteredOrders.slice(0, 5).map((order) => (
+                        <div
+                          key={order.id}
+                          className="flex items-center justify-between p-3 bg-[#f7f4ef] rounded-lg"
+                        >
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {lang === "ar" ? "الطلب" : "Order"} #{order.id.slice(0, 8)}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {new Date(order.createdAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}
+                            </p>
+                          </div>
+                          <p className="font-bold text-gray-900">${order.total.toFixed(2)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* أفضل المنتجات */}
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                  <h2 className="text-lg font-bold text-gray-900 mb-4">{t.seller.topProducts}</h2>
+                  {products.length === 0 ? (
+                    <p className="text-gray-600">{t.seller.noProducts}</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {products.slice(0, 5).map((product) => (
+                        <div
+                          key={product.id}
+                          className="flex items-center justify-between p-3 bg-[#f7f4ef] rounded-lg"
+                        >
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {lang === "ar" ? product.nameAr : product.name}
+                            </p>
+                            <p className="text-xs text-gray-600">${product.price}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-semibold ${
+                                product.inStock
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {product.inStock
+                                ? lang === "ar"
+                                  ? "متوفر"
+                                  : "In Stock"
+                                : t.seller.outOfStock}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* إدارة الطلبات */}
+          {activeTab === "orders" && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <select
+                  value={orderStatusFilter}
+                  onChange={(e) => setOrderStatusFilter(e.target.value)}
+                  className="px-4 py-2 border border-[#efe7da] rounded-lg bg-white"
+                >
+                  <option value="all">{t.seller.allOrders}</option>
+                  <option value="pending">{t.seller.pending}</option>
+                  <option value="completed">{t.seller.completed}</option>
+                </select>
+              </div>
+
+              {filteredOrders.length === 0 ? (
+                <div className="bg-white rounded-2xl p-12 border border-[#efe7da] text-center">
+                  <p className="text-gray-600">{t.seller.noOrders}</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl overflow-hidden border border-[#efe7da]">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#efe7da] bg-[#f7f4ef]">
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                            {lang === "ar" ? "رقم الطلب" : "Order ID"}
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                            {lang === "ar" ? "التاريخ" : "Date"}
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                            {lang === "ar" ? "المبلغ" : "Amount"}
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                            {lang === "ar" ? "الحالة" : "Status"}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredOrders.map((order) => (
+                          <tr key={order.id} className="border-b border-[#efe7da]">
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              {order.id.slice(0, 8)}...
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {new Date(order.createdAt).toLocaleDateString(
+                                lang === "ar" ? "ar-SA" : "en-US"
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                              ${order.total.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 text-sm">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                  (order.status || "pending") === "pending"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : "bg-green-100 text-green-700"
+                                }`}
+                              >
+                                {order.status === "completed" ? t.seller.completed : t.seller.pending}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* إدارة المنتجات */}
+          {activeTab === "products" && (
+            <div className="space-y-6">
+              <Link
+                href="/seller/dashboard?tab=add-product"
+                className="inline-block px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+              >
+                {lang === "ar" ? "إضافة منتج جديد" : "Add New Product"}
+              </Link>
+
+              {products.length === 0 ? (
+                <div className="bg-white rounded-2xl p-12 border border-[#efe7da] text-center">
+                  <p className="text-gray-600">{t.seller.noProducts}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="bg-white rounded-2xl overflow-hidden border border-[#efe7da] shadow-sm hover:shadow-lg transition"
+                    >
+                      <div className="relative h-48">
+                        <Image
+                          src={product.image}
+                          alt={lang === "ar" ? product.nameAr : product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {lang === "ar" ? product.nameAr : product.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">${product.price}</p>
+                        <div className="flex gap-2 mt-4">
+                          <button className="flex-1 px-3 py-2 bg-[#c7a86a] text-black text-sm font-semibold rounded-lg hover:bg-[#b59659] transition flex items-center justify-center gap-2">
+                            <Edit2 size={16} />
+                            {lang === "ar" ? "تعديل" : "Edit"}
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(product.id)}
+                            className="px-3 py-2 border border-red-300 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-50 transition"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* السحب */}
+          {activeTab === "withdrawals" && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div>
+                    <p className="text-sm text-gray-600">{t.seller.totalSales}</p>
+                    <p className="text-2xl font-bold text-gray-900">${totalSales.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">{lang === "ar" ? "تم السحب" : "Withdrawn"}</p>
+                    <p className="text-2xl font-bold text-gray-900">${withdrawnTotal.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">{t.seller.availableBalance}</p>
+                    <p className="text-2xl font-bold text-[#c7a86a]">${availableBalance.toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    // يتم التعامل مع طلب السحب هنا
+                  }}
+                  className="space-y-4 border-t border-[#efe7da] pt-6"
+                >
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder={lang === "ar" ? "مبلغ السحب" : "Withdrawal amount"}
+                    className="w-full border border-[#efe7da] rounded-lg px-4 py-3"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full px-4 py-3 bg-[#c7a86a] text-black font-semibold rounded-lg hover:bg-[#b59659] transition"
+                  >
+                    {t.seller.requestWithdrawal}
+                  </button>
+                </form>
+              </div>
+
+              {withdrawals.length === 0 ? (
+                <div className="bg-white rounded-2xl p-12 border border-[#efe7da] text-center">
+                  <p className="text-gray-600">{t.seller.noWithdrawals}</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl overflow-hidden border border-[#efe7da]">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#efe7da] bg-[#f7f4ef]">
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                            {lang === "ar" ? "المبلغ" : "Amount"}
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                            {lang === "ar" ? "التاريخ" : "Date"}
+                          </th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                            {lang === "ar" ? "الحالة" : "Status"}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {withdrawals.map((withdrawal) => (
+                          <tr key={withdrawal.id} className="border-b border-[#efe7da]">
+                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                              ${withdrawal.amount.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {new Date(withdrawal.createdAt).toLocaleDateString(
+                                lang === "ar" ? "ar-SA" : "en-US"
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                  withdrawal.status === "pending"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : withdrawal.status === "approved"
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-red-100 text-red-700"
+                                }`}
+                              >
+                                {withdrawal.status === "pending"
+                                  ? t.seller.pending
+                                  : withdrawal.status === "approved"
+                                    ? t.seller.approved
+                                    : t.seller.rejected}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* التحليلات */}
+          {activeTab === "analytics" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                  <p className="text-sm text-gray-600">{t.seller.averageOrderValue}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">${averageOrderValue.toFixed(2)}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                  <p className="text-sm text-gray-600">{t.seller.pendingOrders}</p>
+                  <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingOrders}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                  <p className="text-sm text-gray-600">{t.seller.completedOrders}</p>
+                  <p className="text-3xl font-bold text-green-600 mt-2">{completedOrders}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                  <p className="text-sm text-gray-600">{lang === "ar" ? "معدل النجاح" : "Success Rate"}</p>
+                  <p className="text-3xl font-bold text-[#c7a86a] mt-2">
+                    {completedOrders === 0 ? "0%" : ((completedOrders / orders.length) * 100).toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">
+                  {lang === "ar" ? "توزيع الطلبات حسب الحالة" : "Order Distribution"}
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-gray-700">{t.seller.pending}</p>
+                      <p className="text-sm font-bold text-gray-900">{pendingOrders}</p>
+                    </div>
+                    <div className="w-full bg-[#efe7da] rounded-full h-2">
+                      <div
+                        className="bg-yellow-500 h-2 rounded-full"
+                        style={{ width: `${orders.length > 0 ? (pendingOrders / orders.length) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-gray-700">{t.seller.completed}</p>
+                      <p className="text-sm font-bold text-gray-900">{completedOrders}</p>
+                    </div>
+                    <div className="w-full bg-[#efe7da] rounded-full h-2">
+                      <div
+                        className="bg-green-500 h-2 rounded-full"
+                        style={{ width: `${orders.length > 0 ? (completedOrders / orders.length) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* الإعدادات */}
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-6 border border-[#efe7da]">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">{t.seller.storeSettings}</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {lang === "ar" ? "اسم المتجر" : "Store Name"}
+                    </label>
+                    <input
+                      type="text"
+                      value={sellerProfile.storeName}
+                      disabled
+                      className="w-full border border-[#efe7da] rounded-lg px-4 py-3 bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {lang === "ar" ? "التصنيف" : "Category"}
+                    </label>
+                    <input
+                      type="text"
+                      value={sellerProfile.storeCategory}
+                      disabled
+                      className="w-full border border-[#efe7da] rounded-lg px-4 py-3 bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {lang === "ar" ? "رقم الجوال" : "Phone"}
+                    </label>
+                    <input
+                      type="text"
+                      value={sellerProfile.phone}
+                      disabled
+                      className="w-full border border-[#efe7da] rounded-lg px-4 py-3 bg-gray-100"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-4">
+                    {lang === "ar"
+                      ? "لتحديث معلومات المتجر، يرجى التواصل مع الدعم"
+                      : "To update store information, please contact support"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
