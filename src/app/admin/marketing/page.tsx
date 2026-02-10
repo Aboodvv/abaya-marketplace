@@ -71,7 +71,7 @@ export default function AdminMarketingPage() {
     };
 
     load();
-  }, [isAdmin]);
+  }, [canAccess, canManageMarketing]);
 
   const handleChange = (field: keyof MarketingForm, value: string) => {
     setForm((prev) => ({
