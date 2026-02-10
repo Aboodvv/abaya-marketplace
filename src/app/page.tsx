@@ -63,7 +63,6 @@ export default function Home() {
   const [adImages, setAdImages] = useState<string[]>(defaultAdImages);
   const [adItems, setAdItems] = useState(defaultAdItems);
   const [bookingLink, setBookingLink] = useState(defaultBookingLink);
-  const [bannerIndex, setBannerIndex] = useState(0);
 
   const runWhenIdle = (task: () => void) => {
     if (typeof window === "undefined") return () => undefined;
@@ -154,144 +153,10 @@ export default function Home() {
     lang === "ar" ? item[`${key}Ar` as const] || item[key] : item[key] || item[`${key}Ar` as const];
   const resolveLink = (item: (typeof defaultAdItems)[number]) => item.link || bookingLink;
 
-  useEffect(() => {
-    if (adImages.length <= 1) return;
-    const interval = setInterval(() => {
-      setBannerIndex((prev) => (prev + 1) % adImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [adImages.length]);
-
-  useEffect(() => {
-    if (bannerIndex >= adImages.length) {
-      setBannerIndex(0);
-    }
-  }, [adImages.length, bannerIndex]);
-
-  const handlePrevBanner = () => {
-    setBannerIndex((prev) => (prev - 1 + adImages.length) % adImages.length);
-  };
-
-  const handleNextBanner = () => {
-    setBannerIndex((prev) => (prev + 1) % adImages.length);
-  };
 
   return (
     <div className="min-h-screen bg-[#f7f4ef] text-[#1a1a1a]">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-black/55" />
-          <div
-            className="h-full w-full bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url(https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=2400&auto=format&fit=crop)",
-            }}
-          />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 md:py-36">
-          <div className="max-w-2xl">
-            <p className="uppercase tracking-[0.3em] text-[#c7a86a] text-sm mb-4">
-              {lang === "ar" ? "مجموعة فاخرة" : "Luxury Collection"}
-            </p>
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              {t.home.hero.title}
-            </h1>
-            <p className="text-lg md:text-xl text-white/80 mb-8">
-              {t.home.hero.subtitle}
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center px-8 py-4 bg-[#c7a86a] text-black rounded-full font-semibold text-lg hover:bg-[#b59659] transition"
-              >
-                {t.home.hero.cta}
-              </Link>
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center px-8 py-4 border border-white/40 text-white rounded-full font-semibold text-lg hover:border-[#c7a86a] hover:text-[#c7a86a] transition"
-              >
-                {t.products.title}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <MarketingTool />
-
-      {/* Animated Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 pb-12">
-        <div className="relative overflow-hidden rounded-3xl border border-[#efe7da] bg-white shadow-2xl">
-          <div className="relative aspect-[16/9] sm:aspect-[21/9]">
-            {adImages.map((image, index) => {
-              const item = adItems[index] || adItems[0];
-              const isActive = index === bannerIndex;
-              return (
-                <Link
-                  key={`${image}-${index}`}
-                  href={resolveLink(item)}
-                  className={`absolute inset-0 transition-opacity duration-700 ${
-                    isActive ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  <div
-                    className="h-full w-full bg-cover bg-center"
-                    style={{ backgroundImage: `url(${image})` }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
-                  <div
-                    className="absolute inset-0 flex flex-col justify-center gap-3 px-6 sm:px-10"
-                    dir={lang === "ar" ? "rtl" : "ltr"}
-                  >
-                    <p className="text-xs uppercase tracking-[0.35em] text-white/70">
-                      {resolveText(item, "size")}
-                    </p>
-                    <h2 className="text-2xl sm:text-4xl font-bold text-white">
-                      {resolveText(item, "title")}
-                    </h2>
-                    <p className="text-white/80 text-sm sm:text-lg max-w-xl">
-                      {resolveText(item, "subtitle")}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={handlePrevBanner}
-            aria-label={lang === "ar" ? "السابق" : "Previous"}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 text-[#7a5a1f] shadow-lg hover:bg-white"
-          >
-            {lang === "ar" ? "›" : "‹"}
-          </button>
-          <button
-            type="button"
-            onClick={handleNextBanner}
-            aria-label={lang === "ar" ? "التالي" : "Next"}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 text-[#7a5a1f] shadow-lg hover:bg-white"
-          >
-            {lang === "ar" ? "‹" : "›"}
-          </button>
-
-          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2">
-            {adImages.map((_, index) => (
-              <button
-                key={`banner-dot-${index}`}
-                type="button"
-                onClick={() => setBannerIndex(index)}
-                aria-label={lang === "ar" ? `الانتقال ${index + 1}` : `Go to slide ${index + 1}`}
-                className={`h-2.5 w-2.5 rounded-full transition ${
-                  index === bannerIndex ? "bg-[#c7a86a]" : "bg-white/70"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Banners */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 pb-12">
