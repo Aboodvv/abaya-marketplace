@@ -6,10 +6,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuthErrorMessage } from "@/lib/firebaseErrors";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { isAdminUser } from "@/lib/admin";
 
 export default function LoginPage() {
   const { t, lang } = useLanguage();
-  const { login, resetPassword, user, loading: authLoading } = useAuth();
+  const { login, resetPassword, user, userProfile, loading: authLoading } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,10 +28,37 @@ export default function LoginPage() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  const resolvePostLoginPath = async () => {
+    if (!user?.email) return "/";
+
+    if (userProfile && isAdminUser(userProfile)) {
+      return "/admin";
+    }
+
+    try {
+      const email = user.email.toLowerCase();
+      const snapshot = await getDoc(doc(db, "adminRoles", email));
+      if (snapshot.exists()) return "/admin";
+    } catch (error) {
+      console.warn("Failed to check admin access", error);
+    }
+
+    return "/";
+  };
+
   useEffect(() => {
     if (authLoading) return;
-    if (user) router.replace("/");
-  }, [authLoading, router, user]);
+    if (!user) return;
+
+    let isActive = true;
+    resolvePostLoginPath().then((path) => {
+      if (isActive) router.replace(path);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [authLoading, router, user, userProfile]);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -41,7 +71,8 @@ export default function LoginPage() {
 
     try {
       await login(email.trim(), password);
-      router.replace("/");
+      const path = await resolvePostLoginPath();
+      router.replace(path);
     } catch (err: any) {
       showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {
