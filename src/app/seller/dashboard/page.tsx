@@ -66,12 +66,13 @@ export default function SellerDashboardPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [savingWithdraw, setSavingWithdraw] = useState(false);
+  const sellerEmail = sellerProfile?.email?.toLowerCase() || "";
 
   // تحميل المنتجات
   useEffect(() => {
-    if (!sellerUser) return;
+    if (!sellerEmail) return;
     const loadProducts = async () => {
-      const q = query(collection(db, "products"), where("sellerId", "==", sellerUser.uid));
+      const q = query(collection(db, "products"), where("sellerId", "==", sellerEmail));
       const snapshot = await getDocs(q);
       const list = snapshot.docs.map((docSnap) => ({
         id: docSnap.id,
@@ -80,11 +81,11 @@ export default function SellerDashboardPage() {
       setProducts(list);
     };
     loadProducts();
-  }, [sellerUser]);
+  }, [sellerEmail]);
 
   // تحميل الطلبات
   useEffect(() => {
-    if (!sellerUser) return;
+    if (!sellerEmail) return;
     const loadOrders = async () => {
       const snapshot = await getDocs(collection(db, "orders"));
       const list = snapshot.docs
@@ -92,12 +93,12 @@ export default function SellerDashboardPage() {
           id: docSnap.id,
           ...(docSnap.data() as Omit<SellerOrder, "id">),
         }))
-        .filter((order) => order.items?.some((item) => item.sellerId === sellerUser.uid))
+        .filter((order) => order.items?.some((item) => item.sellerId === sellerEmail))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setOrders(list as SellerOrder[]);
     };
     loadOrders();
-  }, [sellerUser]);
+  }, [sellerEmail]);
 
   // تحميل السحوبات
   useEffect(() => {
@@ -117,16 +118,16 @@ export default function SellerDashboardPage() {
   }, [sellerUser]);
 
   const totalSales = useMemo(() => {
-    if (!sellerUser) return 0;
+    if (!sellerEmail) return 0;
     return orders.reduce((sum, order) => {
-      const sellerItems = order.items.filter((item) => item.sellerId === sellerUser.uid);
+      const sellerItems = order.items.filter((item) => item.sellerId === sellerEmail);
       const sellerTotal = sellerItems.reduce(
         (itemSum, item) => itemSum + item.price * item.quantity,
         0
       );
       return sum + sellerTotal;
     }, 0);
-  }, [orders, sellerUser]);
+  }, [orders, sellerEmail]);
 
   const totalItems = useMemo(
     () => orders.reduce((sum, order) => sum + order.items.length, 0),

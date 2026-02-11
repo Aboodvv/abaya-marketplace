@@ -36,6 +36,7 @@ export default function Navbar() {
     { key: "dresses", href: "/dresses", label: t.topPages.dresses.title },
     { key: "fabrics", href: "/fabrics", label: t.topPages.fabrics.title },
     { key: "seller", href: "/seller/login", label: t.nav.seller },
+    { key: "sellerRegister", href: "/seller/register", label: t.nav.sellerRegister },
     { key: "cart", href: "/cart", label: t.nav.cart },
     { key: "account", href: accountHref, label: t.nav.account },
   ];

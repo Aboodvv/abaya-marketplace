@@ -16,10 +16,8 @@ export default function SellerRegisterPage() {
   const maxDocumentSizeMb = 5;
   const [form, setForm] = useState({
     name: "",
+    email: "",
     phone: "",
-    storeName: "",
-    storeCategory: "",
-    username: "",
     password: "",
   });
   const [documentFile, setDocumentFile] = useState<File | null>(null);
@@ -44,7 +42,12 @@ export default function SellerRegisterPage() {
       );
       return;
     }
-    if (!usernamePattern.test(form.username.trim())) {
+    const usernameFromEmail = form.email
+      .trim()
+      .toLowerCase()
+      .split("@")[0]
+      .replace(/[^a-z0-9._-]/g, "");
+    if (!usernamePattern.test(usernameFromEmail)) {
       setError(
         lang === "ar"
           ? "اسم المستخدم يجب أن يحتوي على حروف/أرقام فقط ويمكن استخدام . _ -"
@@ -66,6 +69,9 @@ export default function SellerRegisterPage() {
         }, 20000);
         registerSeller({
           ...form,
+          storeName: form.name.trim(),
+          storeCategory: lang === "ar" ? "عام" : "General",
+          username: usernameFromEmail,
           documentFile,
         })
           .then(() => {
@@ -121,26 +127,11 @@ export default function SellerRegisterPage() {
             required
           />
           <input
-            name="storeName"
-            value={form.storeName}
+            name="email"
+            type="email"
+            value={form.email}
             onChange={handleChange}
-            placeholder={t.seller.storeName}
-            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-            required
-          />
-          <input
-            name="storeCategory"
-            value={form.storeCategory}
-            onChange={handleChange}
-            placeholder={t.seller.storeCategory}
-            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-            required
-          />
-          <input
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            placeholder={t.seller.username}
+            placeholder={t.seller.email}
             className="w-full border border-[#efe7da] rounded-full px-4 py-3"
             required
           />
@@ -154,7 +145,7 @@ export default function SellerRegisterPage() {
             required
           />
           <label className="block text-sm text-gray-700">
-            {t.seller.document}
+            {t.seller.commercialRegister}
           </label>
           <input
             type="file"

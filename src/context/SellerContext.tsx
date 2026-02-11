@@ -15,6 +15,7 @@ import { auth, db, storage } from "@/lib/firebase";
 export interface SellerProfile {
   uid: string;
   name: string;
+  email: string;
   phone: string;
   storeName: string;
   storeCategory: string;
@@ -32,6 +33,7 @@ interface SellerContextType {
   loading: boolean;
   registerSeller: (data: {
     name: string;
+    email: string;
     phone: string;
     storeName: string;
     storeCategory: string;
@@ -77,6 +79,7 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
 
   const registerSeller = async (data: {
     name: string;
+    email: string;
     phone: string;
     storeName: string;
     storeCategory: string;
@@ -86,6 +89,7 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
   }) => {
     const email = toSellerEmail(data.username);
     const result = await createUserWithEmailAndPassword(auth, email, data.password);
+    const normalizedEmail = data.email.trim().toLowerCase();
     const documentPath = `seller-accounts/${result.user.uid}/document-${Date.now()}-${data.documentFile.name}`;
     const documentRef = ref(storage, documentPath);
     await uploadBytes(documentRef, data.documentFile);
@@ -93,6 +97,7 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
     const profile: SellerProfile = {
       uid: result.user.uid,
       name: data.name,
+      email: normalizedEmail,
       phone: data.phone,
       storeName: data.storeName,
       storeCategory: data.storeCategory,

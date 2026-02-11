@@ -14,16 +14,21 @@ import { CartItem } from "@/context/CartContext";
 
 export interface OrderItem {
   id: string;
+  productId: string;
   name: string;
   nameAr: string;
   price: number;
   image: string;
   quantity: number;
+  sellerId?: string;
+  sellerName?: string;
+  storeName?: string;
 }
 
 export interface Order {
   id: string;
   userId: string;
+  sellerIds?: string[];
   items: OrderItem[];
   total: number;
   subtotal?: number;
@@ -68,15 +73,28 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
     freeDeliveryEligible?: boolean;
     freeDeliveryThreshold?: number;
   }) => {
+    const sellerIds = Array.from(
+      new Set(
+        params.items
+          .map((item) => item.sellerId)
+          .filter((sellerId): sellerId is string => Boolean(sellerId))
+      )
+    );
+
     const payload = {
       userId: params.userId,
+      sellerIds,
       items: params.items.map((item) => ({
         id: item.id,
+        productId: item.id,
         name: item.name,
         nameAr: item.nameAr,
         price: item.price,
         image: item.image,
         quantity: item.quantity,
+        sellerId: item.sellerId || null,
+        sellerName: item.sellerName || null,
+        storeName: item.storeName || null,
       })),
       total: params.total,
       subtotal: params.subtotal ?? params.total,
