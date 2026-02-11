@@ -50,6 +50,18 @@ const SellerContext = createContext<SellerContextType | undefined>(undefined);
 const normalizeUsername = (username: string) =>
   username.trim().toLowerCase().replace(/\s+/g, "");
 const toSellerEmail = (username: string) => `${normalizeUsername(username)}@seller.local`;
+const usernamePattern = /^[a-z0-9._-]+$/i;
+const isSellerApproved = (profile: SellerProfile | null | undefined) =>
+  profile?.approved === true || profile?.approvalStatus === "approved";
+
+const normalizeIdentifierToUsername = (identifier: string) => {
+  const normalized = identifier.trim().toLowerCase();
+  if (!normalized) return "";
+  if (normalized.includes("@")) {
+    return normalized.split("@")[0].replace(/[^a-z0-9._-]/g, "");
+  }
+  return normalizeUsername(normalized);
+};
 
 export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
   const [sellerUser, setSellerUser] = useState<User | null>(null);
@@ -116,11 +128,31 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
     void uploadBytes(profileRef, profileBlob).catch((error) => {
       console.error("Failed to upload seller profile backup", error);
     });
+    await signOut(auth);
+    setSellerProfile(null);
   };
 
-  const loginSeller = async (username: string, password: string) => {
+  const loginSeller = async (identifier: string, password: string) => {
+    const username = normalizeIdentifierToUsername(identifier);
+    if (!username || !usernamePattern.test(username)) {
+      throw new Error("SELLER_INVALID_USERNAME");
+    }
     const email = toSellerEmail(username);
-    await signInWithEmailAndPassword(auth, email, password);
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    const docRef = doc(db, "sellers", result.user.uid);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      await signOut(auth);
+      setSellerProfile(null);
+      throw new Error("SELLER_PROFILE_MISSING");
+    }
+    const profile = docSnap.data() as SellerProfile;
+    if (!isSellerApproved(profile)) {
+      await signOut(auth);
+      setSellerProfile(null);
+      throw new Error("SELLER_NOT_APPROVED");
+    }
+    setSellerProfile(profile);
   };
 
   const logoutSeller = async () => {

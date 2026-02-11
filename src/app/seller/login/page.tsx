@@ -11,6 +11,7 @@ export default function SellerLoginPage() {
   const { loginSeller } = useSeller();
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{
@@ -18,6 +19,15 @@ export default function SellerLoginPage() {
     message: string;
   } | null>(null);
   const usernamePattern = /^[a-z0-9._-]+$/i;
+
+  const normalizeIdentifierToUsername = (identifier: string) => {
+    const normalized = identifier.trim().toLowerCase();
+    if (!normalized) return "";
+    if (normalized.includes("@")) {
+      return normalized.split("@")[0].replace(/[^a-z0-9._-]/g, "");
+    }
+    return normalized.replace(/\s+/g, "");
+  };
 
   useEffect(() => {
     if (!toast) return;
@@ -33,7 +43,9 @@ export default function SellerLoginPage() {
     e.preventDefault();
     setToast(null);
     setLoading(true);
-    if (!usernamePattern.test(username.trim())) {
+    const identifier = email.trim() || username.trim();
+    const normalizedUsername = normalizeIdentifierToUsername(identifier);
+    if (!normalizedUsername || !usernamePattern.test(normalizedUsername)) {
       showToast(
         "error",
         lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username"
@@ -42,13 +54,22 @@ export default function SellerLoginPage() {
       return;
     }
     try {
-      await loginSeller(username, password);
+      await loginSeller(identifier, password);
       router.push("/seller/dashboard");
     } catch (err: any) {
-      showToast(
-        "error",
-        err.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed")
-      );
+      if (err?.message === "SELLER_NOT_APPROVED") {
+        showToast("error", t.seller.approvalPendingMessage);
+      } else if (err?.message === "SELLER_INVALID_USERNAME") {
+        showToast(
+          "error",
+          lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username"
+        );
+      } else {
+        showToast(
+          "error",
+          err.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -60,7 +81,7 @@ export default function SellerLoginPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
           {t.seller.login}
         </h1>
-        <p className="text-gray-600 mb-6 text-center">{t.seller.title}</p>
+        <p className="text-black mb-6 text-center">{t.seller.title}</p>
 
         {toast && (
           <div
@@ -76,20 +97,35 @@ export default function SellerLoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-black">
+          <label className="block text-sm font-semibold text-black">
+            {t.seller.username}
+          </label>
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder={t.seller.username}
-            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
-            required
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3 text-black placeholder:text-gray-500"
           />
+          <label className="block text-sm font-semibold text-black">
+            {t.seller.email}
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t.seller.email}
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3 text-black placeholder:text-gray-500"
+          />
+          <label className="block text-sm font-semibold text-black">
+            {t.seller.password}
+          </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t.seller.password}
-            className="w-full border border-[#efe7da] rounded-full px-4 py-3"
+            className="w-full border border-[#efe7da] rounded-full px-4 py-3 text-black placeholder:text-gray-500"
             required
           />
           <button
@@ -103,9 +139,12 @@ export default function SellerLoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-gray-600 mt-6">
+        <p className="text-center text-black mt-6">
           {lang === "ar" ? "لا يوجد حساب؟" : "No account yet?"} {" "}
-          <Link href="/seller/register" className="text-[#c7a86a] font-semibold hover:underline">
+          <Link
+            href="/seller/register"
+            className="text-black font-semibold underline decoration-[#c7a86a] hover:opacity-80"
+          >
             {t.seller.register}
           </Link>
         </p>

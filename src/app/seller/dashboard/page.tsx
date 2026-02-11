@@ -67,6 +67,7 @@ export default function SellerDashboardPage() {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [savingWithdraw, setSavingWithdraw] = useState(false);
   const sellerEmail = sellerProfile?.email?.toLowerCase() || "";
+  const isApproved = sellerProfile?.approved === true || sellerProfile?.approvalStatus === "approved";
 
   // تحميل المنتجات
   useEffect(() => {
@@ -238,6 +239,26 @@ export default function SellerDashboardPage() {
               {t.seller.register}
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isApproved) {
+    return (
+      <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-[#efe7da] text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            {t.seller.approvalPendingTitle}
+          </h1>
+          <p className="text-gray-700 mb-6">{t.seller.approvalPendingMessage}</p>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
+          >
+            {t.seller.login}
+          </button>
         </div>
       </div>
     );

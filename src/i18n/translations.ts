@@ -262,7 +262,6 @@ export const translations = {
         title: "Mega Deals",
         timerLabel: "Ends in",
         empty: "No offers available",
-      sellerRegister: "تسجيل بائع",
       },
       ads: {
         title: "Ad Spots For Rent",
@@ -455,6 +454,8 @@ export const translations = {
       title: "Seller Portal",
       register: "Create Seller Account",
       login: "Seller Login",
+      approvalPendingTitle: "Approval pending",
+      approvalPendingMessage: "Your seller account is waiting for admin approval.",
       name: "Full Name",
       email: "Email",
       phone: "Phone Number",
@@ -544,6 +545,7 @@ export const translations = {
       cart: "السلة",
       login: "تسجيل الدخول",
       seller: "البائع",
+      sellerRegister: "تسجيل بائع",
       admin: "الإدارة",
     },
     topPages: {
@@ -998,6 +1000,8 @@ export const translations = {
       title: "بوابة البائعين",
       register: "تسجيل بائع",
       login: "دخول البائع",
+      approvalPendingTitle: "بانتظار الموافقة",
+      approvalPendingMessage: "حساب البائع بانتظار موافقة الإدارة.",
       name: "الاسم الكامل",
       email: "البريد الإلكتروني",
       phone: "رقم الجوال",
