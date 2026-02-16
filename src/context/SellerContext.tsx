@@ -41,7 +41,7 @@ interface SellerContextType {
     username: string;
     password: string;
   }) => Promise<void>;
-  loginSeller: (username: string, password: string) => Promise<void>;
+  loginSeller: (identifier: string, password: string) => Promise<void>;
   logoutSeller: () => Promise<void>;
 }
 
@@ -136,21 +136,23 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
     // Try username first
     let username = normalizeIdentifierToUsername(identifier);
     let email = toSellerEmail(username);
-    let result: User | null = null;
+    let user: import("firebase/auth").User | null = null;
     let docSnap: any = null;
     try {
       if (!username || !usernamePattern.test(username)) {
         throw new Error("SELLER_INVALID_USERNAME");
       }
-      result = await signInWithEmailAndPassword(auth, email, password);
-      const docRef = doc(db, "sellers", result.user.uid);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      user = result.user;
+      const docRef = doc(db, "sellers", user.uid);
       docSnap = await getDoc(docRef);
     } catch (e) {
       // If failed, try as email
       try {
         email = identifier.trim().toLowerCase();
-        result = await signInWithEmailAndPassword(auth, email, password);
-        const docRef = doc(db, "sellers", result.user.uid);
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        user = result.user;
+        const docRef = doc(db, "sellers", user.uid);
         docSnap = await getDoc(docRef);
       } catch (e2) {
         await signOut(auth);

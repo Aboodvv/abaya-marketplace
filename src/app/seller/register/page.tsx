@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSeller } from "@/context/SellerContext";
 
@@ -11,6 +13,8 @@ export default function SellerRegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [redirectAgreement, setRedirectAgreement] = useState(false);
+  const router = useRouter();
   const usernamePattern = /^[a-z0-9._-]+$/i;
   const maxDocumentSizeMb = 5;
   const [form, setForm] = useState({
@@ -84,6 +88,7 @@ export default function SellerRegisterPage() {
       });
 
       setSuccess(true);
+      setTimeout(() => setRedirectAgreement(true), 1200);
     } catch (err: any) {
       setError(err.message || (lang === "ar" ? "فشل تسجيل البائع" : "Failed to register"));
     } finally {
@@ -91,6 +96,10 @@ export default function SellerRegisterPage() {
     }
   };
 
+  if (redirectAgreement) {
+    router.replace("/seller/agreement");
+    return null;
+  }
   if (success) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center px-4 py-10">
@@ -99,12 +108,6 @@ export default function SellerRegisterPage() {
             {t.seller.approvalPendingTitle}
           </h1>
           <p className="text-gray-700 mb-6">{t.seller.approvalPendingMessage}</p>
-          <Link
-            href="/seller/login"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#c7a86a] text-black font-semibold hover:bg-[#b59659] transition"
-          >
-            {t.seller.login}
-          </Link>
         </div>
       </div>
     );
