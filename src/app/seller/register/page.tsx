@@ -60,33 +60,13 @@ export default function SellerRegisterPage() {
     }
     setLoading(true);
     try {
-      await new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(() => {
-          reject(
-            new Error(
-              lang === "ar"
-                ? "العملية تأخرت، حاول مرة أخرى"
-                : "Request timed out, please try again"
-            )
-          );
-        }, 20000);
-        registerSeller({
-          ...form,
-          storeName: form.name.trim(),
-          storeCategory: lang === "ar" ? "عام" : "General",
-          username: usernameFromEmail,
-          documentFile,
-        })
-          .then(() => {
-            clearTimeout(timer);
-            resolve();
-          })
-          .catch((error) => {
-            clearTimeout(timer);
-            reject(error);
-          });
+      await registerSeller({
+        ...form,
+        storeName: form.name.trim(),
+        storeCategory: lang === "ar" ? "عام" : "General",
+        username: usernameFromEmail,
+        documentFile,
       });
-
       setSuccess(true);
       setTimeout(() => setRedirectAgreement(true), 1200);
     } catch (err: any) {
