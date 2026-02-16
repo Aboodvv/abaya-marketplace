@@ -6,7 +6,16 @@ export function middleware(req: NextRequest) {
 
   // حماية أعمق: منع الوصول لـ /seller إذا لم يكن التاجر approved
   const approved = req.cookies.get("seller_approved")?.value;
-  if (pathname.startsWith("/seller") && approved !== "true") {
+  const exemptPages = [
+    "/seller/login",
+    "/seller/register",
+    "/seller/agreement"
+  ];
+  if (
+    pathname.startsWith("/seller") &&
+    approved !== "true" &&
+    !exemptPages.some((page) => pathname.startsWith(page))
+  ) {
     return NextResponse.redirect(new URL("/seller/login", req.url));
   }
 
