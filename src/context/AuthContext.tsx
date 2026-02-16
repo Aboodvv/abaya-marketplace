@@ -69,6 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } satisfies UserProfile;
   };
 
+  const isSellerAccount = (currentUser: User) =>
+    (currentUser.email || "").toLowerCase().endsWith("@seller.local");
+
   const getProfileCacheKey = (uid: string) => `profile:${uid}`;
   const getSessionCacheKey = () => "auth:session";
 
@@ -201,6 +204,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (isMounted) setUserProfile(fallbackProfile);
       writeCachedProfile(fallbackProfile);
+
+      if (isSellerAccount(currentUser)) {
+        return;
+      }
 
       if (debugAuth) {
         console.debug("[auth] loadProfile:start", {

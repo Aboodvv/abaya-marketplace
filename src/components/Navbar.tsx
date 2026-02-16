@@ -77,13 +77,9 @@ export default function Navbar() {
           </div>
 
           <div className="flex justify-center">
-            <Link href="/" className="text-2xl font-bold tracking-wide">
-              {lang === "ar" ? "برزن" : "Barzn"}
-              <span
-                className={`text-sm text-[#c7a86a] ${dir === "rtl" ? "mr-2" : "ml-2"}`}
-              >
-                Abaya
-              </span>
+            <Link href="/" aria-label="LUMA Home" className="flex items-center gap-2">
+              <img src="/luma-logo.svg" alt="LUMA Logo" width={48} height={48} className="rounded-full border border-[#B3B0A6] bg-[#CAC6C3]" />
+              <span className="text-2xl font-[Cinzel Decorative,serif] tracking-wide text-[#6B6A61]">LUMA</span>
             </Link>
           </div>
 

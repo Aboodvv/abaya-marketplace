@@ -54,22 +54,34 @@ export default function SellerLoginPage() {
       return;
     }
     try {
-      await loginSeller(identifier, password);
+      // استدعاء API Route الجديد
+      const res = await fetch("/api/seller-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: identifier, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === "SELLER_NOT_APPROVED") {
+          showToast("error", t.seller.approvalPendingMessage);
+        } else if (data.error === "SELLER_PROFILE_MISSING") {
+          showToast(
+            "error",
+            lang === "ar" ? "حساب البائع غير موجود" : "Seller profile missing"
+          );
+        } else {
+          showToast("error", data.error || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed"));
+        }
+        setLoading(false);
+        return;
+      }
+      // إذا نجح، انتقل للوحة البائع
       router.push("/seller/dashboard");
     } catch (err: any) {
-      if (err?.message === "SELLER_NOT_APPROVED") {
-        showToast("error", t.seller.approvalPendingMessage);
-      } else if (err?.message === "SELLER_INVALID_USERNAME") {
-        showToast(
-          "error",
-          lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username"
-        );
-      } else {
-        showToast(
-          "error",
-          err.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed")
-        );
-      }
+      showToast(
+        "error",
+        err.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed")
+      );
     } finally {
       setLoading(false);
     }

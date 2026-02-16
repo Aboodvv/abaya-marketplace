@@ -133,15 +133,32 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const loginSeller = async (identifier: string, password: string) => {
-    const username = normalizeIdentifierToUsername(identifier);
-    if (!username || !usernamePattern.test(username)) {
-      throw new Error("SELLER_INVALID_USERNAME");
+    // Try username first
+    let username = normalizeIdentifierToUsername(identifier);
+    let email = toSellerEmail(username);
+    let result: User | null = null;
+    let docSnap: any = null;
+    try {
+      if (!username || !usernamePattern.test(username)) {
+        throw new Error("SELLER_INVALID_USERNAME");
+      }
+      result = await signInWithEmailAndPassword(auth, email, password);
+      const docRef = doc(db, "sellers", result.user.uid);
+      docSnap = await getDoc(docRef);
+    } catch (e) {
+      // If failed, try as email
+      try {
+        email = identifier.trim().toLowerCase();
+        result = await signInWithEmailAndPassword(auth, email, password);
+        const docRef = doc(db, "sellers", result.user.uid);
+        docSnap = await getDoc(docRef);
+      } catch (e2) {
+        await signOut(auth);
+        setSellerProfile(null);
+        throw new Error("SELLER_PROFILE_MISSING");
+      }
     }
-    const email = toSellerEmail(username);
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    const docRef = doc(db, "sellers", result.user.uid);
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) {
+    if (!docSnap || !docSnap.exists()) {
       await signOut(auth);
       setSellerProfile(null);
       throw new Error("SELLER_PROFILE_MISSING");
