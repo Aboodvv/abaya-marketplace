@@ -132,20 +132,15 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
     setSellerProfile(null);
   };
 
-  const loginSeller = async (identifier: string, password: string) => {
-    let emailToUse = identifier.trim().toLowerCase();
+  const loginSeller = async (email: string, password: string) => {
     let user: import("firebase/auth").User | null = null;
     let docSnap: any = null;
-    // إذا المستخدم كتب username
-    if (!emailToUse.includes("@")) {
-      // جيب الإيميل من Firestore
-      const q = query(collection(db, "sellers"), where("username", "==", emailToUse));
-      const snap = await getDocs(q);
-      if (snap.empty) throw new Error("SELLER_INVALID_USERNAME");
-      emailToUse = snap.docs[0].data().email;
+    // يقبل فقط البريد الإلكتروني
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      throw new Error("SELLER_INVALID_EMAIL");
     }
     try {
-      const result = await signInWithEmailAndPassword(auth, emailToUse, password);
+      const result = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
       user = result.user;
       const docRef = doc(db, "sellers", user.uid);
       docSnap = await getDoc(docRef);
