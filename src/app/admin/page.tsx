@@ -78,6 +78,7 @@ export default function AdminPage() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
   const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
+  const [adminError, setAdminError] = useState<string>("");
   const [sellerLookup, setSellerLookup] = useState<Record<string, SellerInfo>>({});
   const [sellers, setSellers] = useState<SellerReview[]>([]);
   const [loadingSellers, setLoadingSellers] = useState(true);
@@ -195,17 +196,23 @@ export default function AdminPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await addDoc(productsRef, {
-      ...form,
-      price: Number(form.price),
-      sellerId: "platform@abaya.local",
-      sellerName: "Abaya Store",
-      storeName: "Abaya Store",
-      createdAt: new Date().toISOString(),
-    });
-    setForm(emptyProduct);
-    setSaving(false);
-    await loadProducts();
+    setAdminError("");
+    try {
+      await addDoc(productsRef, {
+        ...form,
+        price: Number(form.price),
+        sellerId: "platform@abaya.local",
+        sellerName: "Abaya Store",
+        storeName: "Abaya Store",
+        createdAt: new Date().toISOString(),
+      });
+      setForm(emptyProduct);
+      await loadProducts();
+    } catch (err: any) {
+      setAdminError(err.message || "حدث خطأ أثناء إضافة المنتج");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleEdit = (product: AdminProduct) => {
@@ -225,47 +232,64 @@ export default function AdminPage() {
 
   const handleUpdate = async (productId: string) => {
     setSaving(true);
-    const productRef = doc(db, "products", productId);
-    await updateDoc(productRef, {
-      ...editForm,
-      price: Number(editForm.price),
-    });
-    setEditingId(null);
-    setSaving(false);
-    await loadProducts();
+    setAdminError("");
+    try {
+      const productRef = doc(db, "products", productId);
+      await updateDoc(productRef, {
+        ...editForm,
+        price: Number(editForm.price),
+      });
+      setEditingId(null);
+      await loadProducts();
+    } catch (err: any) {
+      setAdminError(err.message || "حدث خطأ أثناء تحديث المنتج");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (productId: string) => {
-    await deleteDoc(doc(db, "products", productId));
-    await loadProducts();
+    setAdminError("");
+    try {
+      await deleteDoc(doc(db, "products", productId));
+      await loadProducts();
+    } catch (err: any) {
+      setAdminError(err.message || "حدث خطأ أثناء حذف المنتج");
+    }
   };
 
   const updateWithdrawalStatus = async (withdrawalId: string, status: string) => {
     setUpdatingWithdrawals(withdrawalId);
-    await updateDoc(doc(db, "withdrawals", withdrawalId), { status });
-    const snapshot = await getDocs(collection(db, "withdrawals"));
-    const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
-    }));
-    setWithdrawals(list);
-    const sellerIds = Array.from(new Set(list.map((item) => item.sellerId)));
-    if (sellerIds.length > 0) {
-      const entries = await Promise.all(
-        sellerIds.map(async (sellerId) => {
-          const sellerSnap = await getDoc(doc(db, "sellers", sellerId));
-          if (!sellerSnap.exists()) return [sellerId, undefined] as const;
-          const data = sellerSnap.data() as SellerInfo;
-          return [sellerId, data] as const;
-        })
-      );
-      const map: Record<string, SellerInfo> = {};
-      entries.forEach(([sellerId, info]) => {
-        if (info) map[sellerId] = info;
-      });
-      setSellerLookup(map);
+    setAdminError("");
+    try {
+      await updateDoc(doc(db, "withdrawals", withdrawalId), { status });
+      const snapshot = await getDocs(collection(db, "withdrawals"));
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
+      }));
+      setWithdrawals(list);
+      const sellerIds = Array.from(new Set(list.map((item) => item.sellerId)));
+      if (sellerIds.length > 0) {
+        const entries = await Promise.all(
+          sellerIds.map(async (sellerId) => {
+            const sellerSnap = await getDoc(doc(db, "sellers", sellerId));
+            if (!sellerSnap.exists()) return [sellerId, undefined] as const;
+            const data = sellerSnap.data() as SellerInfo;
+            return [sellerId, data] as const;
+          })
+        );
+        const map: Record<string, SellerInfo> = {};
+        entries.forEach(([sellerId, info]) => {
+          if (info) map[sellerId] = info;
+        });
+        setSellerLookup(map);
+      }
+    } catch (err: any) {
+      setAdminError(err.message || "حدث خطأ أثناء تحديث حالة السحب");
+    } finally {
+      setUpdatingWithdrawals(null);
     }
-    setUpdatingWithdrawals(null);
   };
 
   const updateSellerStatus = async (
@@ -273,18 +297,24 @@ export default function AdminPage() {
     status: "pending" | "approved" | "rejected"
   ) => {
     setUpdatingSeller(sellerId);
-    await updateDoc(doc(db, "sellers", sellerId), {
-      approvalStatus: status,
-      approved: status === "approved",
-      approvedAt: status === "approved" ? new Date().toISOString() : null,
-    });
-    const snapshot = await getDocs(collection(db, "sellers"));
-    const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...(docSnap.data() as Omit<SellerReview, "id">),
-    }));
-    setSellers(list as SellerReview[]);
-    setUpdatingSeller(null);
+    setAdminError("");
+    try {
+      await updateDoc(doc(db, "sellers", sellerId), {
+        approvalStatus: status,
+        approved: status === "approved",
+        approvedAt: status === "approved" ? new Date().toISOString() : null,
+      });
+      const snapshot = await getDocs(collection(db, "sellers"));
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<SellerReview, "id">),
+      }));
+      setSellers(list as SellerReview[]);
+    } catch (err: any) {
+      setAdminError(err.message || "حدث خطأ أثناء تحديث حالة البائع");
+    } finally {
+      setUpdatingSeller(null);
+    }
   };
 
   if (authLoading || accessLoading) {
@@ -294,6 +324,26 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  // عرض رسالة الخطأ العامة للإدارة
+  const renderAdminError = () =>
+    adminError ? (
+      <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-center font-bold">
+        {adminError}
+      </div>
+    ) : null;
+
+  // --- ضع عرض رسالة الخطأ أعلى الصفحة ---
+
+  // ...existing code...
+
+  // JSX الرئيسي للصفحة
+  return (
+    <div>
+      {renderAdminError()}
+      {/* ...باقي الصفحة... */}
+    </div>
+  );
 
   if (!user) {
     return (

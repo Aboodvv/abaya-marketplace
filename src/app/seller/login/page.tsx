@@ -10,7 +10,6 @@ export default function SellerLoginPage() {
   const { t, lang } = useLanguage();
   const { loginSeller } = useSeller();
   const router = useRouter();
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,16 +17,6 @@ export default function SellerLoginPage() {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const usernamePattern = /^[a-z0-9._-]+$/i;
-
-  const normalizeIdentifierToUsername = (identifier: string) => {
-    const normalized = identifier.trim().toLowerCase();
-    if (!normalized) return "";
-    if (normalized.includes("@")) {
-      return normalized.split("@")[0].replace(/[^a-z0-9._-]/g, "");
-    }
-    return normalized.replace(/\s+/g, "");
-  };
 
   useEffect(() => {
     if (!toast) return;
@@ -43,34 +32,41 @@ export default function SellerLoginPage() {
     e.preventDefault();
     setToast(null);
     setLoading(true);
-    const identifier = email.trim() || username.trim();
-    const normalizedUsername = normalizeIdentifierToUsername(identifier);
-    if (!normalizedUsername || !usernamePattern.test(normalizedUsername)) {
-      showToast(
-        "error",
-        lang === "ar" ? "اسم المستخدم غير صالح" : "Invalid username"
-      );
-      setLoading(false);
-      return;
-    }
     try {
+      // تحقق من الحقول
+      if (!email.trim()) {
+        showToast("error", lang === "ar" ? "يرجى إدخال البريد الإلكتروني" : "Please enter email");
+        setLoading(false);
+        return;
+      }
+      if (!password.trim()) {
+        showToast("error", lang === "ar" ? "يرجى إدخال كلمة المرور" : "Please enter password");
+        setLoading(false);
+        return;
+      }
       // استدعاء API Route الجديد
       const res = await fetch("/api/seller-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: identifier, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
-      const data = await res.json();
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        showToast("error", lang === "ar" ? "خطأ في الاتصال بالخادم" : "Server response error");
+        setLoading(false);
+        return;
+      }
       if (!res.ok) {
-        if (data.error === "SELLER_NOT_APPROVED") {
+        if (data?.error === "SELLER_NOT_APPROVED") {
           showToast("error", t.seller.approvalPendingMessage);
-        } else if (data.error === "SELLER_PROFILE_MISSING") {
-          showToast(
-            "error",
-            lang === "ar" ? "حساب البائع غير موجود" : "Seller profile missing"
-          );
+        } else if (data?.error === "SELLER_PROFILE_MISSING") {
+          showToast("error", lang === "ar" ? "حساب البائع غير موجود" : "Seller profile missing");
+        } else if (data?.error) {
+          showToast("error", data.error);
         } else {
-          showToast("error", data.error || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed"));
+          showToast("error", lang === "ar" ? "فشل تسجيل الدخول" : "Login failed");
         }
         setLoading(false);
         return;
@@ -80,7 +76,7 @@ export default function SellerLoginPage() {
     } catch (err: any) {
       showToast(
         "error",
-        err.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed")
+        err?.message || (lang === "ar" ? "فشل تسجيل الدخول" : "Login failed")
       );
     } finally {
       setLoading(false);
@@ -110,15 +106,6 @@ export default function SellerLoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-black">
-          <label className="block text-sm font-semibold text-black">
-            {t.seller.username}
-          </label>
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder={t.seller.username}
-            className="w-full border border-[#efe7da] rounded-full px-4 py-3 text-black placeholder:text-gray-500"
-          />
           <label className="block text-sm font-semibold text-black">
             {t.seller.email}
           </label>

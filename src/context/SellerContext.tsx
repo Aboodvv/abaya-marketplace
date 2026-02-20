@@ -133,32 +133,26 @@ export const SellerProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const loginSeller = async (identifier: string, password: string) => {
-    // Try username first
-    let username = normalizeIdentifierToUsername(identifier);
-    let email = toSellerEmail(username);
+    let emailToUse = identifier.trim().toLowerCase();
     let user: import("firebase/auth").User | null = null;
     let docSnap: any = null;
+    // إذا المستخدم كتب username
+    if (!emailToUse.includes("@")) {
+      // جيب الإيميل من Firestore
+      const q = query(collection(db, "sellers"), where("username", "==", emailToUse));
+      const snap = await getDocs(q);
+      if (snap.empty) throw new Error("SELLER_INVALID_USERNAME");
+      emailToUse = snap.docs[0].data().email;
+    }
     try {
-      if (!username || !usernamePattern.test(username)) {
-        throw new Error("SELLER_INVALID_USERNAME");
-      }
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, emailToUse, password);
       user = result.user;
       const docRef = doc(db, "sellers", user.uid);
       docSnap = await getDoc(docRef);
     } catch (e) {
-      // If failed, try as email
-      try {
-        email = identifier.trim().toLowerCase();
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        user = result.user;
-        const docRef = doc(db, "sellers", user.uid);
-        docSnap = await getDoc(docRef);
-      } catch (e2) {
-        await signOut(auth);
-        setSellerProfile(null);
-        throw new Error("SELLER_PROFILE_MISSING");
-      }
+      await signOut(auth);
+      setSellerProfile(null);
+      throw new Error("SELLER_PROFILE_MISSING");
     }
     if (!docSnap || !docSnap.exists()) {
       await signOut(auth);
