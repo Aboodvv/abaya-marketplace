@@ -31,10 +31,10 @@ export default function LoginPage() {
   const resolvePostLoginPath = async () => {
     if (!user?.email) return "/";
 
+    // تحقق من الأدمن
     if (userProfile && isAdminUser(userProfile)) {
       return "/admin";
     }
-
     try {
       const email = user.email.toLowerCase();
       const snapshot = await getDoc(doc(db, "adminRoles", email));
@@ -43,6 +43,23 @@ export default function LoginPage() {
       console.warn("Failed to check admin access", error);
     }
 
+    // تحقق من البائع
+    try {
+      const sellerSnapshot = await getDoc(doc(db, "sellers", user.uid));
+      if (sellerSnapshot.exists()) {
+        const sellerData = sellerSnapshot.data();
+        if (sellerData.approvalStatus === "approved") {
+          return "/seller/dashboard";
+        } else {
+          // إذا لم يكن البائع معتمد، توجهه لصفحة الاتفاقية أو رسالة انتظار
+          return "/seller/agreement";
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to check seller access", error);
+    }
+
+    // إذا لم يكن أدمن أو بائع، توجهه للمتجر
     return "/";
   };
 
@@ -72,7 +89,20 @@ export default function LoginPage() {
     try {
       await login(email.trim(), password);
       const path = await resolvePostLoginPath();
-      router.replace(path);
+      // إذا كان البائع غير معتمد، أظهر رسالة انتظار
+      if (path === "/seller/agreement") {
+        showToast(
+          "error",
+          lang === "ar"
+            ? "حساب البائع قيد المراجعة من الإدارة. سيتم إشعارك عند الموافقة."
+            : "Seller account is pending admin approval. You will be notified once approved."
+        );
+        setTimeout(() => {
+          router.replace(path);
+        }, 2000);
+      } else {
+        router.replace(path);
+      }
     } catch (err: any) {
       showToast("error", getFirebaseAuthErrorMessage(err, lang));
     } finally {
