@@ -81,6 +81,22 @@ const emptyProduct = {
 };
 
 export default function AdminPage() {
+  // متغيرات الحالة المطلوبة للوظائف
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sellers, setSellers] = useState<SellerReview[]>([]);
+  const [loadingSellers, setLoadingSellers] = useState(true);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
+  const [sellerLookup, setSellerLookup] = useState<Record<string, SellerInfo>>({});
+  // متغيرات التحكم في الصلاحيات
+  // ملاحظة: يجب ضبط هذه القيم حسب منطقك، هنا افتراضياً true لتعمل الصفحة
+  const canAccess = isAdmin === true;
+  const showProducts = isAdmin === true;
+  const showSellers = isAdmin === true;
+  const showWithdrawals = isAdmin === true;
+  // مرجع المنتجات
+  const productsRef = useMemo(() => collection(db, "products"), []);
 
   const { lang, t } = useLanguage();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
