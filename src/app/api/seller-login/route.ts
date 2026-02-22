@@ -1,4 +1,6 @@
 
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, query, collection, where, getDocs } from "firebase/firestore";

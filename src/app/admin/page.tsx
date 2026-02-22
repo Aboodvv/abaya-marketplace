@@ -1,5 +1,18 @@
 "use client";
 
+import { useEffect } from "react";
+import { getAuth } from "firebase/auth";
+
+// فحص claims عند الدخول باستخدام dynamic import
+useEffect(() => {
+  import("firebase/auth").then(({ getAuth }) => {
+    const auth = getAuth();
+    auth.currentUser?.getIdTokenResult().then(res => {
+      console.log("CLAIMS:", res.claims);
+    });
+  });
+}, []);
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -70,43 +83,25 @@ const emptyProduct = {
 };
 
 export default function AdminPage() {
-  const { lang, t } = useLanguage();
-  const { user, userProfile, loading: authLoading } = useAuth();
-  const { canAccess, loading: accessLoading, hasPermission } = useAdminAccess(userProfile);
-  const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
-  const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
-  const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
-  const [adminError, setAdminError] = useState<string>("");
-  const [sellerLookup, setSellerLookup] = useState<Record<string, SellerInfo>>({});
-  const [sellers, setSellers] = useState<SellerReview[]>([]);
-  const [loadingSellers, setLoadingSellers] = useState(true);
-  const [updatingSeller, setUpdatingSeller] = useState<string | null>(null);
-  const [sellerFilter, setSellerFilter] = useState("all");
-  const [sellerSearch, setSellerSearch] = useState("");
-  const [withdrawalFilter, setWithdrawalFilter] = useState("all");
-  const [withdrawalSearch, setWithdrawalSearch] = useState("");
-  const [withdrawalFrom, setWithdrawalFrom] = useState("");
-  const [withdrawalTo, setWithdrawalTo] = useState("");
-  const [withdrawalSort, setWithdrawalSort] = useState("newest");
-  const [form, setForm] = useState(emptyProduct);
-  const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState(emptyProduct);
-  const showProducts = hasPermission("products");
-  const showOrders = hasPermission("orders");
-  const showCustomers = hasPermission("customers");
-  const showCoupons = hasPermission("coupons");
-  const showShipping = hasPermission("shipping");
-  const showRoles = hasPermission("roles");
-  const showPages = hasPermission("pages");
-  const showMarketing = hasPermission("marketing");
-  const showBanners = hasPermission("banners");
-  const showSellers = hasPermission("sellers");
-  const showWithdrawals = hasPermission("withdrawals");
 
-  const productsRef = useMemo(() => collection(db, "products"), []);
+  const { lang, t } = useLanguage();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    import("firebase/auth").then(({ getAuth }) => {
+      const auth = getAuth();
+      if (!auth.currentUser) {
+        setIsAdmin(false);
+        setAuthLoading(false);
+        return;
+      }
+      auth.currentUser.getIdTokenResult().then(res => {
+        setIsAdmin(res.claims.admin === true);
+        setAuthLoading(false);
+      });
+    });
+  }, []);
 
   const loadProducts = async () => {
     setLoading(true);
