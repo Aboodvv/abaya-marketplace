@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getAuth } from "firebase/auth";
 
 // فحص claims عند الدخول باستخدام dynamic import
@@ -12,8 +12,6 @@ useEffect(() => {
     });
   });
 }, []);
-
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   addDoc,
