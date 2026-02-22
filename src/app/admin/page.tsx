@@ -81,6 +81,8 @@ const emptyProduct = {
 };
 
 export default function AdminPage() {
+    const [form, setForm] = useState(emptyProduct);
+    const [editForm, setEditForm] = useState(emptyProduct);
   // متغيرات الحالة المطلوبة للوظائف
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
