@@ -82,6 +82,8 @@ const emptyProduct = {
 
 export default function AdminPage() {
   // متغيرات الحالة المطلوبة للوظائف
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [sellers, setSellers] = useState<SellerReview[]>([]);
@@ -99,8 +101,6 @@ export default function AdminPage() {
   const productsRef = useMemo(() => collection(db, "products"), []);
 
   const { lang, t } = useLanguage();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     import("firebase/auth").then(({ getAuth }) => {
