@@ -122,7 +122,7 @@ export default function AdminPage() {
   const showSellers = isAdmin === true;
   const showWithdrawals = isAdmin === true;
   // مرجع المنتجات
-  const productsRef = useMemo(() => collection(db, "products"), []);
+  // لم يعد هناك حاجة إلى productsRef
 
   const { lang, t } = useLanguage();
 
@@ -143,13 +143,15 @@ export default function AdminPage() {
 
   const loadProducts = async () => {
     setLoading(true);
-    const snapshot = await getDocs(productsRef);
-    const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...(docSnap.data() as Omit<AdminProduct, "id">),
-    }));
-    setProducts(list);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/products");
+      const list = await res.json();
+      setProducts(list);
+    } catch (err) {
+      setAdminError("فشل تحميل المنتجات");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -178,31 +180,17 @@ export default function AdminPage() {
     if (!canAccess || !showWithdrawals) return;
     const loadWithdrawals = async () => {
       setLoadingWithdrawals(true);
-      const snapshot = await getDocs(collection(db, "withdrawals"));
-      const list = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
-      }));
-      setWithdrawals(list);
-      const sellerIds = Array.from(new Set(list.map((item) => item.sellerId)));
-      if (sellerIds.length > 0) {
-        const entries = await Promise.all(
-          sellerIds.map(async (sellerId) => {
-            const sellerSnap = await getDoc(doc(db, "sellers", sellerId));
-            if (!sellerSnap.exists()) return [sellerId, undefined] as const;
-            const data = sellerSnap.data() as SellerInfo;
-            return [sellerId, data] as const;
-          })
-        );
-        const map: Record<string, SellerInfo> = {};
-        entries.forEach(([sellerId, info]) => {
-          if (info) map[sellerId] = info;
-        });
-        setSellerLookup(map);
+      try {
+        const res = await fetch("/api/admin/withdrawals");
+        const list = await res.json();
+        setWithdrawals(list);
+        // ملاحظة: جلب بيانات البائعين المرتبطين يمكن نقله لاحقاً إلى API منفصل أو توسيع API الحالي
+      } catch (err) {
+        setAdminError("فشل تحميل السحوبات");
+      } finally {
+        setLoadingWithdrawals(false);
       }
-      setLoadingWithdrawals(false);
     };
-
     loadWithdrawals();
   }, [canAccess, showWithdrawals]);
 
@@ -231,14 +219,18 @@ export default function AdminPage() {
     setSaving(true);
     setAdminError("");
     try {
-      await addDoc(productsRef, {
-        ...form,
-        price: Number(form.price),
-        sellerId: "platform@abaya.local",
-        sellerName: "Abaya Store",
-        storeName: "Abaya Store",
-        createdAt: new Date().toISOString(),
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          price: Number(form.price),
+          sellerId: "platform@abaya.local",
+          sellerName: "Abaya Store",
+          storeName: "Abaya Store",
+        }),
       });
+      if (!res.ok) throw new Error("فشل إضافة المنتج");
       setForm(emptyProduct);
       await loadProducts();
     } catch (err: any) {
@@ -267,11 +259,15 @@ export default function AdminPage() {
     setSaving(true);
     setAdminError("");
     try {
-      const productRef = doc(db, "products", productId);
-      await updateDoc(productRef, {
-        ...editForm,
-        price: Number(editForm.price),
+      const res = await fetch(`/api/admin/products/${productId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...editForm,
+          price: Number(editForm.price),
+        }),
       });
+      if (!res.ok) throw new Error("فشل تحديث المنتج");
       setEditingId(null);
       await loadProducts();
     } catch (err: any) {
@@ -284,7 +280,10 @@ export default function AdminPage() {
   const handleDelete = async (productId: string) => {
     setAdminError("");
     try {
-      await deleteDoc(doc(db, "products", productId));
+      const res = await fetch(`/api/admin/products/${productId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("فشل حذف المنتج");
       await loadProducts();
     } catch (err: any) {
       setAdminError(err.message || "حدث خطأ أثناء حذف المنتج");
@@ -295,29 +294,13 @@ export default function AdminPage() {
     setUpdatingWithdrawals(withdrawalId);
     setAdminError("");
     try {
-      await updateDoc(doc(db, "withdrawals", withdrawalId), { status });
-      const snapshot = await getDocs(collection(db, "withdrawals"));
-      const list = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() as Omit<WithdrawalRequest, "id">),
-      }));
-      setWithdrawals(list);
-      const sellerIds = Array.from(new Set(list.map((item) => item.sellerId)));
-      if (sellerIds.length > 0) {
-        const entries = await Promise.all(
-          sellerIds.map(async (sellerId) => {
-            const sellerSnap = await getDoc(doc(db, "sellers", sellerId));
-            if (!sellerSnap.exists()) return [sellerId, undefined] as const;
-            const data = sellerSnap.data() as SellerInfo;
-            return [sellerId, data] as const;
-          })
-        );
-        const map: Record<string, SellerInfo> = {};
-        entries.forEach(([sellerId, info]) => {
-          if (info) map[sellerId] = info;
-        });
-        setSellerLookup(map);
-      }
+      const res = await fetch("/api/admin/withdrawals", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: withdrawalId, status }),
+      });
+      if (!res.ok) throw new Error("فشل تحديث حالة السحب");
+      await loadWithdrawals();
     } catch (err: any) {
       setAdminError(err.message || "حدث خطأ أثناء تحديث حالة السحب");
     } finally {
