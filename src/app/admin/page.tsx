@@ -3,15 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { getAuth } from "firebase/auth";
 
-// فحص claims عند الدخول باستخدام dynamic import
-useEffect(() => {
-  import("firebase/auth").then(({ getAuth }) => {
-    const auth = getAuth();
-    auth.currentUser?.getIdTokenResult().then(res => {
-      console.log("CLAIMS:", res.claims);
-    });
-  });
-}, []);
 import Link from "next/link";
 import {
   addDoc,
@@ -81,6 +72,37 @@ const emptyProduct = {
 };
 
 export default function AdminPage() {
+                              // فحص claims عند الدخول باستخدام dynamic import (داخل المكون فقط)
+                              useEffect(() => {
+                                import("firebase/auth").then(({ getAuth }) => {
+                                  const auth = getAuth();
+                                  auth.currentUser?.getIdTokenResult().then(res => {
+                                    console.log("CLAIMS:", res.claims);
+                                  });
+                                });
+                              }, []);
+                            const [withdrawalTo, setWithdrawalTo] = useState<string>("");
+                          const [withdrawalFrom, setWithdrawalFrom] = useState<string>("");
+                        const [withdrawalSort, setWithdrawalSort] = useState<string>("");
+                      const [withdrawalSearch, setWithdrawalSearch] = useState<string>("");
+                    const [withdrawalFilter, setWithdrawalFilter] = useState<string>("");
+                  const [sellerSearch, setSellerSearch] = useState<string>("");
+                const [sellerFilter, setSellerFilter] = useState<string>("");
+              const showMarketing = false;
+            const showPages = false;
+          const showBanners = false;
+        // تعطيل وحدات الإدارة غير المدعومة مؤقتًا
+        const showOrders = false;
+        const showCustomers = false;
+        const showCoupons = false;
+        const showShipping = false;
+        const showRoles = false;
+      const [saving, setSaving] = useState(false);
+      const [adminError, setAdminError] = useState("");
+      const [editingId, setEditingId] = useState<string | null>(null);
+      const [updatingWithdrawals, setUpdatingWithdrawals] = useState<string | null>(null);
+      const [updatingSeller, setUpdatingSeller] = useState<string | null>(null);
+      const { user } = useAuth();
     const [form, setForm] = useState(emptyProduct);
     const [editForm, setEditForm] = useState(emptyProduct);
   // متغيرات الحالة المطلوبة للوظائف
@@ -328,7 +350,7 @@ export default function AdminPage() {
     }
   };
 
-  if (authLoading || accessLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-[#f7f4ef] flex items-center justify-center">
         <p className="text-gray-600">{t.common.loading}</p>
