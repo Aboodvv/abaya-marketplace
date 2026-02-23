@@ -67,30 +67,25 @@ export default function AdminBannersPage() {
   useEffect(() => {
     if (!canAccess || !canManageBanners) return;
     const load = async () => {
+      setLoading(true);
       try {
-        const snapshot = await getDoc(doc(db, "settings", "homeAds"));
-        if (snapshot.exists()) {
-          const data = snapshot.data() as {
-            adImages?: string[];
-            adItems?: typeof defaultAdItems;
-            bookingLink?: string;
-          };
-          if (data.adImages && data.adImages.length > 0) {
-            setAdImages(
-              defaultAdImages.map((fallback, index) => data.adImages?.[index] || fallback)
-            );
-          }
-          if (data.adItems && data.adItems.length > 0) {
-            setAdItems(
-              defaultAdItems.map((fallback, index) => ({
-                ...fallback,
-                ...(data.adItems?.[index] || {}),
-              }))
-            );
-          }
-          if (data.bookingLink) {
-            setBookingLink(data.bookingLink);
-          }
+        const res = await fetch("/api/admin/banners");
+        const data = await res.json();
+        if (data.adImages && data.adImages.length > 0) {
+          setAdImages(
+            defaultAdImages.map((fallback, index) => data.adImages?.[index] || fallback)
+          );
+        }
+        if (data.adItems && data.adItems.length > 0) {
+          setAdItems(
+            defaultAdItems.map((fallback, index) => ({
+              ...fallback,
+              ...(data.adItems?.[index] || {}),
+            }))
+          );
+        }
+        if (data.bookingLink) {
+          setBookingLink(data.bookingLink);
         }
       } catch (error) {
         console.error("Failed to load banner settings", error);
@@ -98,7 +93,6 @@ export default function AdminBannersPage() {
         setLoading(false);
       }
     };
-
     load();
   }, [canAccess, canManageBanners]);
 
@@ -156,10 +150,14 @@ export default function AdminBannersPage() {
     event.preventDefault();
     setSaving(true);
     try {
-      await setDoc(doc(db, "settings", "homeAds"), {
-        adImages,
-        adItems,
-        bookingLink,
+      await fetch("/api/admin/banners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adImages,
+          adItems,
+          bookingLink,
+        }),
       });
     } catch (error) {
       console.error("Failed to save banner settings", error);

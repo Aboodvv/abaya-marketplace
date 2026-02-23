@@ -66,32 +66,17 @@ export default function AdminOrdersPage() {
     if (!canAccess || !canManageOrders) return;
     const loadOrders = async () => {
       setLoading(true);
-      const snapshot = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc")));
-      const list = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...(docSnap.data() as Omit<AdminOrder, "id">),
-      }));
-      setOrders(list);
-
-      const userIds = Array.from(new Set(list.map((order) => order.userId))).filter(Boolean);
-      if (userIds.length > 0) {
-        const entries = await Promise.all(
-          userIds.map(async (userId) => {
-            const userSnap = await getDoc(doc(db, "users", userId));
-            if (!userSnap.exists()) return [userId, undefined] as const;
-            const data = userSnap.data() as CustomerInfo;
-            return [userId, data] as const;
-          })
-        );
-        const map: Record<string, CustomerInfo> = {};
-        entries.forEach(([userId, info]) => {
-          if (info) map[userId] = info;
-        });
-        setCustomers(map);
+      try {
+        const res = await fetch("/api/admin/orders");
+        const list = await res.json();
+        setOrders(list);
+        // ملاحظة: جلب بيانات العملاء يمكن نقله لاحقاً إلى API منفصل أو توسيع API الحالي
+      } catch (err) {
+        // يمكن إضافة رسالة خطأ هنا
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-
     loadOrders();
   }, [canAccess, canManageOrders]);
 
@@ -113,11 +98,19 @@ export default function AdminOrdersPage() {
 
   const updateStatus = async (orderId: string, status: AdminOrder["status"]) => {
     setUpdatingId(orderId);
-    await updateDoc(doc(db, "orders", orderId), { status });
-    setOrders((prev) =>
-      prev.map((order) => (order.id === orderId ? { ...order, status } : order))
-    );
-    setUpdatingId(null);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, status }),
+      });
+      if (!res.ok) throw new Error("فشل تحديث حالة الطلب");
+      setOrders((prev) =>
+        prev.map((order) => (order.id === orderId ? { ...order, status } : order))
+      );
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   if (authLoading || accessLoading) {

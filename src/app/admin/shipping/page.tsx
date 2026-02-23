@@ -38,14 +38,14 @@ export default function AdminShippingPage() {
     if (!canAccess || !canManageShipping) return;
     const load = async () => {
       setLoading(true);
-      const snapshot = await getDoc(doc(db, "settings", "shipping"));
-      if (snapshot.exists()) {
-        const data = snapshot.data() as Partial<ShippingSettings>;
+      try {
+        const res = await fetch("/api/admin/shipping");
+        const data = await res.json();
         setForm({ ...emptySettings, ...data });
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-
     load();
   }, [canAccess, canManageShipping]);
 
@@ -59,11 +59,15 @@ export default function AdminShippingPage() {
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
     setSaving(true);
-    await setDoc(doc(db, "settings", "shipping"), {
-      ...form,
-      flatRate: Number(form.flatRate),
-      freeThreshold: Number(form.freeThreshold),
-      updatedAt: new Date().toISOString(),
+    await fetch("/api/admin/shipping", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...form,
+        flatRate: Number(form.flatRate),
+        freeThreshold: Number(form.freeThreshold),
+        updatedAt: new Date().toISOString(),
+      }),
     });
     setSaving(false);
   };

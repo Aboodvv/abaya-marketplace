@@ -38,13 +38,13 @@ export default function AdminRolesPage() {
 
   const loadEntries = async () => {
     setLoading(true);
-    const snapshot = await getDocs(collection(db, "adminRoles"));
-    const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...(docSnap.data() as Omit<AdminRoleEntry, "id">),
-    }));
-    setEntries(list);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/roles");
+      const list = await res.json();
+      setEntries(list);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -63,9 +63,14 @@ export default function AdminRolesPage() {
     if (!email.trim()) return;
     setSaving(true);
     const normalizedEmail = email.trim().toLowerCase();
-    await setDoc(doc(db, "adminRoles", normalizedEmail), {
-      roles: selectedRoles,
-      updatedAt: new Date().toISOString(),
+    await fetch("/api/admin/roles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: normalizedEmail,
+        roles: selectedRoles,
+        updatedAt: new Date().toISOString(),
+      }),
     });
     await loadEntries();
     setEmail("");
@@ -79,7 +84,11 @@ export default function AdminRolesPage() {
   };
 
   const handleDelete = async (entryId: string) => {
-    await deleteDoc(doc(db, "adminRoles", entryId));
+    await fetch("/api/admin/roles", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: entryId }),
+    });
     await loadEntries();
   };
 

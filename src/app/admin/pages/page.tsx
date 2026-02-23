@@ -66,17 +66,14 @@ export default function AdminPagesPage() {
   useEffect(() => {
     if (!canAccess || !canManagePages) return;
     const load = async () => {
+      setLoading(true);
       try {
-        const entries = await Promise.all(
-          pageKeys.map(async (key) => {
-            const snapshot = await getDoc(doc(db, "pages", key));
-            return [key, snapshot.exists() ? (snapshot.data() as Partial<PageForm>) : {}] as const;
-          })
-        );
+        const res = await fetch("/api/admin/pages");
+        const data = await res.json();
         setPages((prev) => {
           const next = { ...prev };
-          entries.forEach(([key, data]) => {
-            next[key] = { ...emptyForm, ...data } as PageForm;
+          pageKeys.forEach((key) => {
+            next[key] = { ...emptyForm, ...(data[key] || {}) } as PageForm;
           });
           return next;
         });
@@ -86,7 +83,6 @@ export default function AdminPagesPage() {
         setLoading(false);
       }
     };
-
     load();
   }, [canAccess, canManagePages]);
 
@@ -104,14 +100,15 @@ export default function AdminPagesPage() {
     event.preventDefault();
     setSaving(true);
     try {
-      await Promise.all(
-        pageKeys.map((key) =>
-          setDoc(doc(db, "pages", key), {
-            ...pages[key],
-            updatedAt: new Date().toISOString(),
-          })
-        )
-      );
+      await fetch("/api/admin/pages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          Object.fromEntries(
+            pageKeys.map((key) => [key, { ...pages[key], updatedAt: new Date().toISOString() }])
+          )
+        ),
+      });
     } catch (error) {
       console.error("Failed to save top bar pages", error);
     } finally {
